@@ -1,0 +1,36 @@
+/* CSS HEX */
+ --apache: #dcb46a;
+--black: #040404;
+--scorpion: #565656;
+--gray: #848484;
+--boulder: #7c7c7c;
+--boulder: #747474;
+--mine-shaft: #3c3c3c;
+--mine-shaft: #343434;
+--mine-shaft: #282828;
+
+
+/* SCSS HEX */
+$apache: #dcb46a;
+$black: #040404;
+$scorpion: #565656;
+$gray: #848484;
+$boulder: #7c7c7c;
+$boulder: #747474;
+$mine-shaft: #3c3c3c;
+$mine-shaft: #343434;
+$mine-shaft: #282828;
+
+
+/* SCSS RGB */
+--apache: rgba(220,180,106,1);
+--black: rgba(4,4,4,1);
+--scorpion: rgba(86,86,86,1);
+--gray: rgba(132,132,132,1);
+--boulder: rgba(124,124,124,1);
+--boulder: rgba(116,116,116,1);
+--mine-shaft: rgba(60,60,60,1);
+--mine-shaft: rgba(52,52,52,1);
+--mine-shaft: rgba(40,40,40,1);
+
+
