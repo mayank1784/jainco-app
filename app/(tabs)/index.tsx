@@ -115,9 +115,9 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView className="h-full bg-zinc-150">
+    <SafeAreaView className="h-full bg-zinc-150 w-full">
       {/* <ScrollView className="px-4"> */}
-      <View className="flex flex-row justify-start items-center gap-6 mt-0.4 px-4">
+      <View className="flex flex-row justify-between items-center mt-0.4 px-2 gap-3">
         {/* <Image source={images.logo} resizeMode="contain" className="w-6 h-6" /> */}
         <View className="flex flex-row justify-center items-center h-20 w-20">
           <Image
