@@ -20,8 +20,12 @@ const TabIcon: React.FC<TabIconProps> = ({ icon, color, name, focused }) => {
         tintColor={color}
         className="w-6 h-6"
       />
-      
-      <Text className={`${focused ? "font-lbold" : "font-rregular"} text-base text-white`}>
+
+      <Text
+        className={`${
+          focused ? "font-lbold" : "font-rregular"
+        } text-base text-white`}
+      >
         {name}
       </Text>
     </View>
@@ -38,7 +42,7 @@ export default function TabLayout() {
           backgroundColor: "#040404",
           borderTopWidth: 2,
           borderTopColor: "#000",
-          height: 100,
+          height: 75,
         },
         headerShown: false,
       }}
