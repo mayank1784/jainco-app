@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, Stack } from "expo-router";
 import { icons } from "@/constants";
 import React from "react";
 import { Image, Text, View, useColorScheme } from "react-native";
@@ -102,6 +102,12 @@ export default function TabLayout() {
               focused={focused}
             />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="search"
+        options={{
+          tabBarButton: () => null, // Hide tab bar button for search
         }}
       />
     </Tabs>

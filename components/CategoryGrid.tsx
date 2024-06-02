@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { styled } from "nativewind";
 import { images } from "@/constants";
+import { router, usePathname } from "expo-router";
 
 const { width } = Dimensions.get("window");
 const ITEM_SIZE = (width - 48) / 2;
@@ -34,9 +35,16 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
   onEndReachedThreshold,
   onEndReached,
 }) => {
+  const pathname = usePathname();
   const renderItem = ({ item }: { item: Item }) => (
     <TouchableOpacity
-      onPress={() => onPressItem && onPressItem(item)}
+      onPress={() => {
+        // if (pathname.startsWith("/search/category")) {
+        //   router.setParams({ category: item.title });
+        // } else {
+        router.push(`/search/category/${item.title}`);
+        // }
+      }}
       style={{
         width: ITEM_SIZE,
         height: ITEM_SIZE,
@@ -53,7 +61,7 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
         />
       </View>
       <View className="w-full bg-primary h-[30%] rounded-b-xl flex justify-center items-center">
-        <Text className=" text-white font-iregular text-base leading-5 text-center flex-wrap shrink px-2">
+        <Text className=" text-white font-iregular text-base leading-5 text-center flex-wrap shrink px-2 capitalize">
           {item.title}
         </Text>
       </View>
@@ -70,7 +78,7 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
         // Center rows within the FlatList
         marginHorizontal: "auto",
       }}
-      className="mt-5 mx-0 border border-red-600" // Adjust border style as needed
+      className="mt-2 mx-0" // Adjust border style as needed
       onEndReachedThreshold={onEndReachedThreshold || 0.5}
       onEndReached={onEndReached}
       showsVerticalScrollIndicator={false}

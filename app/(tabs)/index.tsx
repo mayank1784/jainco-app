@@ -21,7 +21,7 @@ const data = [
   },
   {
     id: "2",
-    title: "Item 2",
+    title: "Item 2 aaloo kanda washing machine",
     photoUrl:
       "https://images.woodenstreet.de/image/data/HOMEWARDS/TABLE%20RUNNER/digital-printed-printed-blue-mughal-tree-table-runner-72-13-inch)/H-3.jpg",
   },
@@ -83,18 +83,78 @@ const data = [
     photoUrl:
       "https://www.bigbasket.com/media/uploads/p/l/40242945-3_1-kuber-industries-dot-design-pvc-food-matbed-server-reversible-waterproof-blue-standard.jpg",
   },
-  { id: "1d", title: "Item 1", photoUrl: "" },
-  { id: "2s", title: "Item 2", photoUrl: "" },
-  { id: "3a", title: "Item 3", photoUrl: "" },
-  { id: "4s", title: "Item 4", photoUrl: "" },
-  { id: "5s", title: "Item 5", photoUrl: "" },
-  { id: "6d", title: "Item 6", photoUrl: "" },
-  { id: "7w", title: "Item 4", photoUrl: "" },
-  { id: "8s", title: "Item 5", photoUrl: "" },
-  { id: "9a", title: "Item 6", photoUrl: "" },
-  { id: "1s0", title: "Item 4", photoUrl: "" },
-  { id: "81r", title: "Item 5", photoUrl: "" },
-  { id: "91d", title: "Item 6", photoUrl: "" },
+  {
+    id: "1d",
+    title: "Item 1",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "2s",
+    title: "Item 2",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "3a",
+    title: "Item 3",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "4s",
+    title: "Item 4",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "5s",
+    title: "Item 5",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "6d",
+    title: "Item 6",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "7w",
+    title: "Item 4",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "8s",
+    title: "Item 5",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "9a",
+    title: "Item 6",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "1s0",
+    title: "Item 4",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "81r",
+    title: "Item 5",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
+  {
+    id: "91d",
+    title: "Item 6",
+    photoUrl:
+      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+  },
 ];
 export default function Index() {
   const [isEndOfListReached, setIsEndOfListReached] = useState(false);
@@ -133,8 +193,12 @@ export default function Index() {
           </Text>
         </View>
       </View>
-      <View className="mt-4 px-4">
+      <View className="mt-4 px-4 flex flex-col">
         <SearchInput />
+        <Text className="mt-4 text-xl font-iregular text-primary text-center">
+          Our Products
+        </Text>
+        <View className="border border-primary-100 border-dashed mt-3 mx-2"></View>
       </View>
       <CategoryGrid
         data={data}
