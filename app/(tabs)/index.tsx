@@ -7,11 +7,13 @@ import {
   Animated,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { images } from "@/constants";
+import { icons, images } from "@/constants";
 import SearchInput from "@/components/SearchInput";
 import CategoryGrid from "@/components/CategoryGrid";
+import CartWishlistIcons from "@/components/CartWishListIcons";
 const data = [
   {
     id: "1",
@@ -187,11 +189,12 @@ export default function Index() {
           />
         </View>
         <View className="flex flex-col justify-center items-center">
-          <Text className="text-black font-lbold text-4xl">JAINCO DECOR</Text>
+          <Text className="text-black font-lbold text-3xl">JAINCO DECOR</Text>
           <Text className="text-lg text-black font-rregular">
             Decor your Dream Home
           </Text>
         </View>
+        <CartWishlistIcons />
       </View>
       <View className="mt-4 px-4 flex flex-col">
         <SearchInput />
@@ -210,7 +213,6 @@ export default function Index() {
           <Text className="text-lg text-center text-primary"> aaloo</Text>
         </View>
       )}
-
       {/* </ScrollView> */}
     </SafeAreaView>
   );

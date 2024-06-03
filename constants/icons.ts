@@ -1,18 +1,15 @@
-import home from "@/assets/icons/home.png";
-import profile from "@/assets/icons/profile.png";
-import qr from "@/assets/icons/qr.png";
-import search from "@/assets/icons/search.png";
-import points from "@/assets/icons/points.png";
-import flashon from "@/assets/icons/flashon.png";
-import flashoff from "@/assets/icons/flashoff.png";
-import cameraIcon from "@/assets/icons/camera.png";
 export default {
-  home,
-  profile,
-  qr,
-  search,
-  points,
-  flashon,
-  flashoff,
-  cameraIcon,
+  home: require("@/assets/icons/home.png"),
+  profile: require("@/assets/icons/profile.png"),
+  qr: require("@/assets/icons/qr.png"),
+  search: require("@/assets/icons/search.png"),
+  points: require("@/assets/icons/points.png"),
+  flashon: require("@/assets/icons/flashon.png"),
+  flashoff: require("@/assets/icons/flashoff.png"),
+  cameraIcon: require("@/assets/icons/camera.png"),
+  wishlist: require("@/assets/icons/wishlist.png"),
+  add: require("@/assets/icons/add.png"),
+  remove: require("@/assets/icons/remove.png"),
+  cart: require("@/assets/icons/cart.png"),
+  wishlistcart: require("@/assets/icons/wishlistcart.png"),
 };
