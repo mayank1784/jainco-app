@@ -28,7 +28,9 @@ const SearchInput: React.FC<SearchInputProps> = ({ initialQuery }) => {
           }
           if (pathname.startsWith("/search")) {
             router.setParams({ query });
+            setQuery("")
           } else {
+            setQuery("");
             router.push(`/search/${query}`);
           }
         }}
