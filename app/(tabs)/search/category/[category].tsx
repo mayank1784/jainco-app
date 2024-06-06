@@ -192,6 +192,13 @@ const CategorySearchScreen = () => {
             </View>
           </TouchableOpacity>
         )}
+        ListFooterComponent={() => (
+          <View className="w-full h-auto justify-start items-center mt-2 mb-2">
+            <Text className="text-base text-primary-200 font-iregular">
+              That's All
+            </Text>
+          </View>
+        )}
       />
       {/* <View className="p-4 bg-white rounded-lg shadow-md mb-4 mt-3">
         <View className="flex-row justify-between">

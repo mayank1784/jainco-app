@@ -101,7 +101,7 @@ export default function TabLayout() {
               name="Profile"
               focused={focused}
             />
-          ),
+          ),  
         }}
       />
       <Tabs.Screen

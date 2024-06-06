@@ -17,71 +17,71 @@ import CartWishlistIcons from "@/components/CartWishListIcons";
 const data = [
   {
     id: "1",
-    title: "Item 1",
+    title: "Table Covers",
     photoUrl:
       "https://tiimg.tistatic.com/fp/1/006/882/home-furnishing-curtains-cushion-etc--228.jpg",
   },
   {
     id: "2",
-    title: "Item 2 aaloo kanda washing machine",
+    title: "Table Runners",
     photoUrl:
       "https://images.woodenstreet.de/image/data/HOMEWARDS/TABLE%20RUNNER/digital-printed-printed-blue-mughal-tree-table-runner-72-13-inch)/H-3.jpg",
   },
   {
     id: "3",
-    title: "Item 3",
+    title: "Mattress Protectors",
     photoUrl:
       "https://m.media-amazon.com/images/I/71-grzeNbLL._AC_UF894,1000_QL80_.jpg",
   },
   {
     id: "4",
-    title: "Item 4",
+    title: "Washing Machine Covers",
     photoUrl:
       "https://jdbasket.in/cdn/shop/files/high_quality_zipper_image_jpg.jpg",
   },
   {
     id: "5",
-    title: "Item 5",
+    title: "Fridge Top Covers",
     photoUrl:
       "https://5.imimg.com/data5/SELLER/Default/2022/11/FE/JQ/RY/125510900/waterproof-refrigerator-cover.jpg",
   },
   {
     id: "6",
-    title: "Item 6",
+    title: "Wallpapers",
     photoUrl:
       "https://5.imimg.com/data5/GG/KS/BN/SELLER-106630672/premium-wallpaper-roll-0-53-x-10-meters-50-sqft--500x500.jpg",
   },
   {
     id: "7",
-    title: "Item 7",
+    title: "Table Cloths",
     photoUrl:
       "https://m.media-amazon.com/images/I/71I9MwrXL6L._AC_UF894,1000_QL80_.jpg",
   },
   {
     id: "8",
-    title: "Item 8",
+    title: "Aprons",
     photoUrl: "https://m.media-amazon.com/images/I/81dw36-jlnL._AC_UY1100_.jpg",
   },
   {
     id: "9",
-    title: "Item 9",
+    title: "Curtains",
     photoUrl: "https://drapestory.in/cdn/shop/files/550_1_jpg.jpg?v=1691592956",
   },
   {
     id: "10",
-    title: "Item 10",
+    title: "Sofa Covers",
     photoUrl:
       "https://m.media-amazon.com/images/I/A16famgNV+L._AC_UF894,1000_QL80_.jpg",
   },
   {
     id: "81",
-    title: "Item 11",
+    title: "Chair Covers",
     photoUrl:
       "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
   },
   {
     id: "91",
-    title: "Item 12",
+    title: "Bed Mats",
     photoUrl:
       "https://www.bigbasket.com/media/uploads/p/l/40242945-3_1-kuber-industries-dot-design-pvc-food-matbed-server-reversible-waterproof-blue-standard.jpg",
   },

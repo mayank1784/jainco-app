@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { View, TouchableOpacity, Image, Text } from "react-native";
 import { CartContext, WishlistContext } from "@/context/CartWishListContext";
 import { icons } from "@/constants";
+import { router } from "expo-router";
 
 const CartWishlistIcons: React.FC = () => {
   const cartContext = useContext(CartContext);
@@ -17,7 +18,7 @@ const CartWishlistIcons: React.FC = () => {
   return (
     <View className="flex flex-row justify-between items-center">
       <View className="relative">
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/productPage")}>
           <Image
             source={icons.cart}
             className="w-8 h-8"
