@@ -1,8 +1,21 @@
 import { icons } from "@/constants";
 import React, { useState, useEffect } from "react";
-import { Text, View, ScrollView, Image, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+  FlatList,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Product } from "@/lib/types";
+// import Carousel from "react-native-snap-carousel";
+// import {SliderBox} from "react-native-image-slider-box"
+
+const { width: viewportWidth } = Dimensions.get("window");
 
 interface ProductPageProps {
   product: Product;
@@ -18,6 +31,9 @@ const ProductPage: React.FC = () => {
   }>({});
   const [mainImage, setMainImage] = useState(product.mainImage);
   const [productName, setProductName] = useState<string | null>(product.name);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const images = [mainImage, ...product.otherImages];
 
   useEffect(() => {
     updateProductName();
@@ -91,12 +107,17 @@ const ProductPage: React.FC = () => {
       return newSelectedAttributes;
     });
   };
+  const viewableItemChanges = ({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setActiveSlide(viewableItems[0].index);
+    }
+  };
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full">
       <ScrollView>
-        <View className="p-4">
-          {/* Product Image */}
-          <View className="items-center">
+        {/* Product Image */}
+
+        {/* <View className="items-center">
             <Image
               source={{
                 uri: mainImage,
@@ -104,10 +125,45 @@ const ProductPage: React.FC = () => {
               className="w-full h-96"
               resizeMode="cover"
             />
-          </View>
+          </View> */}
 
+        <View>
+          <FlatList
+            data={images}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  width: viewportWidth,
+                  alignItems: "center",
+                  padding: 16,
+                }}
+              >
+                <Image source={{ uri: item }} style={styles.image} />
+              </View>
+            )}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={viewableItemChanges}
+            viewabilityConfig={{
+              itemVisiblePercentThreshold: 90,
+            }}
+          />
+          <View className="flex-row justify-center mt-1">
+            {images.map((_, index) => (
+              <View
+                key={index}
+                className={` h-2 w-2 rounded-full mx-1 ${
+                  index === activeSlide ? "bg-secondary" : "bg-primary-200"
+                }`}
+              />
+            ))}
+          </View>
+        </View>
+        <View className="p-4">
           {/* Product Name */}
-          <Text className="text-2xl font-lbold mt-4 capitalize">
+          <Text className="text-2xl font-lbold mt-0 capitalize">
             {productName}
           </Text>
           {/* Rating and Reviews */}
@@ -155,71 +211,6 @@ const ProductPage: React.FC = () => {
               </View>
             </View>
           ))}
-          {/* Colors */}
-          {/* <View className="mt-4">
-            <Text className="text-gray-600">Colors</Text>
-            <ScrollView horizontal className="mt-2">
-              <Image
-                source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Red_Color.jpg/1536px-Red_Color.jpg",
-                }}
-                className="w-12 h-12 mr-2 rounded-full"
-              />
-              <Image
-                source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Color-yellow.JPG",
-                }}
-                className="w-12 h-12 mr-2 rounded-full"
-              />
-              <Image
-                source={{
-                  uri: "https://imageonline.co/downloading.php?imagename=A20.png&color=green",
-                }}
-                className="w-12 h-12 mr-2 rounded-full"
-              />
-              <Image
-                source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Red_Color.jpg/1536px-Red_Color.jpg",
-                }}
-                className="w-12 h-12 mr-2 rounded-full"
-              />
-              <Image
-                source={{
-                  uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Red_Color.jpg/1536px-Red_Color.jpg",
-                }}
-                className="w-12 h-12 mr-2 rounded-full"
-              /> */}
-
-          {/* Add more colors as needed */}
-          {/* </ScrollView>
-          </View> */}
-
-          {/* Sizes */}
-          {/* <View className="mt-4">
-            <Text className="text-gray-600">Sizes</Text>
-            <View className="flex-row flex-wrap mt-2">
-              {[
-                "XXS",
-                "XS",
-                "S",
-                "M",
-                "L",
-                "XL",
-                "aas",
-                "adf",
-                "dwfwf",
-                "dww",
-                "wfegge",
-              ].map((size) => (
-                <TouchableOpacity
-                  key={size}
-                  className="border border-gray-300 rounded-md py-2 mr-2 mb-2 px-4"
-                >
-                  <Text>{size}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View> */}
 
           {/* Add to Cart Button */}
           <View className="flex-row flex-wrap mt-2 items-center gap-x-4">
@@ -248,5 +239,12 @@ const ProductPage: React.FC = () => {
     </SafeAreaView>
   );
 };
-
+const styles = StyleSheet.create({
+  image: {
+    width: viewportWidth,
+    height: 384,
+    resizeMode: "cover",
+    borderRadius: 0,
+  },
+});
 export default ProductPage;
