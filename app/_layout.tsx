@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { CartWishlistProvider } from "@/context/CartWishListContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -23,13 +24,16 @@ export default function RootLayout() {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <CartWishlistProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(test)" options = {{headerShown: false}} />
-        {/* <Stack.Screen name="search/[query]" options={{ headerShown: false }} /> */}
-        {/* <Stack.Screen name="+not-found" /> */}
-      </Stack>
-    </CartWishlistProvider>
+    <AuthProvider>
+      <CartWishlistProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(test)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          {/* <Stack.Screen name="search/[query]" options={{ headerShown: false }} /> */}
+          {/* <Stack.Screen name="+not-found" /> */}
+        </Stack>
+      </CartWishlistProvider>
+    </AuthProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { icons } from "@/constants";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Text,
   View,
@@ -9,11 +9,12 @@ import {
   Dimensions,
   StyleSheet,
   FlatList,
+  ViewToken,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Product } from "@/lib/types";
-// import Carousel from "react-native-snap-carousel";
-// import {SliderBox} from "react-native-image-slider-box"
+import { CartContext } from "@/context/CartWishListContext";
 
 const { width: viewportWidth } = Dimensions.get("window");
 
@@ -22,18 +23,24 @@ interface ProductPageProps {
 }
 
 import data from "@/data/productItems";
-const product = data[0];
+const product = data[2];
 
 // const Profile:React.FC<ProductPageProps> = ({product}) => {
 const ProductPage: React.FC = () => {
   const [selectedAttributes, setSelectedAttributes] = useState<{
     [key: string]: string | [string, string];
-  }>({});
+  }>({}); //handling variation selection
   const [mainImage, setMainImage] = useState(product.mainImage);
-  const [productName, setProductName] = useState<string | null>(product.name);
+  const [productName, setProductName] = useState<string | "">(product.name);
   const [activeSlide, setActiveSlide] = useState(0);
+  const { cart, addToCart, clearCart } = useContext(CartContext) || {
+    cart: [],
+    addToCart: () => {},
+    clearCart: () => {},
+  };
 
   const images = [mainImage, ...product.otherImages];
+  const [quantity, setQuantity] = useState<number>(10);
 
   useEffect(() => {
     updateProductName();
@@ -107,11 +114,56 @@ const ProductPage: React.FC = () => {
       return newSelectedAttributes;
     });
   };
-  const viewableItemChanges = ({ viewableItems }) => {
+  const viewableItemChanges = ({
+    viewableItems,
+  }: {
+    viewableItems: ViewToken[];
+  }) => {
     if (viewableItems.length > 0) {
-      setActiveSlide(viewableItems[0].index);
+      setActiveSlide(viewableItems[0].index || 0);
     }
   };
+
+  const handleAddToCart = (quantity: number) => {
+    const selectedVariations = Object.keys(selectedAttributes).reduce(
+      (acc, key) => {
+        const value = selectedAttributes[key];
+        acc[key] = Array.isArray(value) ? value[0] : value;
+        return acc;
+      },
+      {} as { [key: string]: string }
+    );
+
+    const transformValue = (value: string): string => {
+      const parts = value.split(" ");
+      if (parts.length > 1) {
+        return `${parts[0]}(${parts.slice(1).join(")(")})`;
+      }
+      return value;
+    };
+
+    const skuId = `${product.category
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase())
+      .join("")}_${product.name.split(/\s+/)[0].toUpperCase()}_${Object.values(
+      selectedVariations
+    )
+      .map(transformValue)
+      .join("_")
+      .toUpperCase()}`;
+
+    const productWithVariations = {
+      skuId: skuId,
+      name: productName,
+      category: product.category,
+      // selectedVariations,
+      qty: quantity,
+      // name: productName!,
+    };
+
+    addToCart(productWithVariations);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full">
       <ScrollView>
@@ -213,25 +265,49 @@ const ProductPage: React.FC = () => {
           ))}
 
           {/* Add to Cart Button */}
-          <View className="flex-row flex-wrap mt-2 items-center gap-x-4">
-            <TouchableOpacity className="h-6 w-6 rounded-full">
-              <Image
-                source={icons.remove}
-                className="w-full h-full"
-                resizeMode="contain"
+          <View className="flex-row mt-2 items-center gap-x-2 justify-start">
+            <View className="flex-row items-center justify-start">
+              {/* qty add button */}
+              <TouchableOpacity
+                className="h-8 w-8 rounded-full mr-2"
+                onPress={() => setQuantity((prevQty) => prevQty - 1)}
+              >
+                <Image
+                  source={icons.remove}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+
+              {/* qty input */}
+              <TextInput
+                className="border border-gray-300 rounded-md px-4 py-2 text-center"
+                keyboardType="numeric"
+                value={quantity.toString()}
+                onChangeText={(text) => setQuantity(Number(text))}
               />
-            </TouchableOpacity>
-            <TouchableOpacity className="bg-secondary rounded-full py-4 mt-6 w-[60%]">
+
+              {/* qty remove button */}
+              <TouchableOpacity
+                className="h-8 w-8 rounded-full ml-2"
+                onPress={() => setQuantity((prevQty) => prevQty + 1)}
+              >
+                <Image
+                  source={icons.add}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              className="bg-secondary rounded-full py-4 flex-grow"
+              onPress={() => {
+                handleAddToCart(quantity);
+              }}
+            >
               <Text className="text-center text-white text-lg font-bold">
                 Add to Cart
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="h-6 w-6 rounded-full">
-              <Image
-                source={icons.add}
-                className="w-full h-full"
-                resizeMode="contain"
-              />
             </TouchableOpacity>
           </View>
         </View>

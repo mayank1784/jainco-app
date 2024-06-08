@@ -18,6 +18,7 @@ const ITEM_SIZE = (width - 48) / 2;
 interface Item {
   id: string;
   title: string;
+  photoUrl: string;
 }
 
 interface FlatListGridProps {

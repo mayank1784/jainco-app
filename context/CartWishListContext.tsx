@@ -1,23 +1,25 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Product } from "@/lib/types";
+import { Alert } from "react-native";
 
-// Define types
-interface Product {
-  id: number;
-  [key: string]: any;
+interface CartItem {
+  skuId: string;
+  name: string;
+  category: string;
+  qty: number;
 }
-
 interface CartContextType {
-  cart: Product[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
+  cart: CartItem[];
+  addToCart: (product: CartItem) => void;
+  removeFromCart: (productId: string) => void;
   clearCart: () => void;
 }
 
 interface WishlistContextType {
   wishlist: Product[];
   addToWishlist: (product: Product) => void;
-  removeFromWishlist: (productId: number) => void;
+  removeFromWishlist: (productId: string) => void;
   clearWishList: () => void;
 }
 
@@ -34,7 +36,7 @@ const WISHLIST_STORAGE_KEY = "wishlist";
 export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [cart, setCart] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
 
   // Load cart and wishlist from AsyncStorage on component mount
@@ -64,6 +66,7 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     saveCart();
+    console.log("cart", cart);
   }, [cart]);
 
   // Save wishlist to AsyncStorage whenever it changes
@@ -82,19 +85,33 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
     saveWishlist();
   }, [wishlist]);
 
-  const addToCart = (product: Product) => {
-    setCart((prevCart) => [...prevCart, product]);
+  const addToCart = (product: CartItem) => {
+    // Check if the product already exists in the cart
+    const isDuplicate = cart.some((item) => item.skuId === product.skuId);
+
+    if (isDuplicate) {
+      // Show alert for duplicate item
+      Alert.alert(
+        "Duplicate Item",
+        "This item is already in your cart.",
+        [{ text: "OK" }],
+        { cancelable: false }
+      );
+    } else {
+      // Add the product to the cart if not a duplicate
+      setCart((prevCart) => [...prevCart, product]);
+    }
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  const removeFromCart = (skuId: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item.skuId !== skuId));
   };
 
   const addToWishlist = (product: Product) => {
     setWishlist((prevWishlist) => [...prevWishlist, product]);
   };
 
-  const removeFromWishlist = (productId: number) => {
+  const removeFromWishlist = (productId: string) => {
     setWishlist((prevWishlist) =>
       prevWishlist.filter((item) => item.id !== productId)
     );

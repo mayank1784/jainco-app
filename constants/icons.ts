@@ -12,5 +12,7 @@ export default {
   remove: require("@/assets/icons/remove.png"),
   cart: require("@/assets/icons/cart.png"),
   wishlistcart: require("@/assets/icons/wishlistcart.png"),
-  arrowRight: require("@/assets/icons/arrowRight.png")
+  arrowRight: require("@/assets/icons/arrowRight.png"),
+  eye: require("@/assets/icons/eye.png"),
+  eyeHide: require("@/assets/icons/eye-hide.png"),
 };

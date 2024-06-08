@@ -25,7 +25,14 @@ const CartWishlistIcons: React.FC = () => {
             style={{ tintColor: cart.length ? "#dcb46a" : "#848484" }}
           />
           {cart.length > 0 && (
-            <View className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+            <View
+              className="absolute top-0 right-0 min-w-2 min-h-2 bg-red-500 rounded-full justify-center items-center"
+              style={{ padding: 1 }}
+            >
+              <Text style={{ fontSize: 9 }} className="text-white">
+                {cart.length}
+              </Text>
+            </View>
           )}
         </TouchableOpacity>
       </View>

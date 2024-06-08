@@ -78,7 +78,7 @@ const data: Product[] = [
     ],
     variations: {
       size: ['40" x 60"', '45" x 70"', '54" x 78"', '60" x 90"'],
-      type: ["Golden Lace", "Silver Lace","Beige Lace"],
+      type: ["Golden Lace", "Silver Lace", "Beige Lace"],
     },
     keywords: [
       "diamond",
