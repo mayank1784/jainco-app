@@ -12,7 +12,7 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ product }) => {
-  const {signOut} = useAuth()
+  const {signOut, currentUser, profileData} = useAuth()
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full">
       <ScrollView>
@@ -28,6 +28,8 @@ const Profile: React.FC<ProfileProps> = ({ product }) => {
 await signOut()
         }}
         />
+        <Text className='text-red flex text-center px-4'> {currentUser ? currentUser.email: "aaloo"}</Text>
+        <Text className='mt-10 text-red flex text-center px-4'> {profileData ? profileData.stateName: "aaloo"}</Text>
       </ScrollView>
     </SafeAreaView>
   );

@@ -10,18 +10,29 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
+  db
 } from "@/services/firebase";
 import { User } from "firebase/auth";
+import {collection, doc, setDoc, getDoc} from "firebase/firestore"
 import { router } from "expo-router";
 
 interface AuthContextType {
   currentUser: User | null;
-  signUp: (email: string, password: string) => Promise<void>;
+  profileData: any | null;
+  signUp: (form: UserForm) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
 }
-
+interface UserForm {
+  name: string;
+  email: string;
+  password: string;
+  gstin: string;
+  pincode: string;
+  districtName: string;
+  stateName: string;
+}
 // Create Auth Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -39,12 +50,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [profileData, setProfileData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Firebase Auth Listener
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setCurrentUser(user);
+      if (user) {
+        const profileDoc = await getDoc(doc(db, "users", user.uid));
+        if (profileDoc.exists()) {
+          setProfileData(profileDoc.data());
+        }
+      } else {
+        setProfileData(null);
+      }
       setLoading(false);
     });
 
@@ -52,9 +72,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Sign Up Function
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (form:UserForm) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const credentials = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      const profile = credentials.user
+      await setDoc(doc(db, "users", profile.uid), {
+        name: form.name,
+        email: form.email,
+        gstin: form.gstin,
+        pincode: form.pincode,
+        districtName: form.districtName,
+        stateName: form.stateName,
+        role:"customer"
+      });
+      setProfileData({
+        name: form.name,
+        email: form.email,
+        gstin: form.gstin,
+        pincode: form.pincode,
+        districtName: form.districtName,
+        stateName: form.stateName,
+        role:"customer"
+      });
+      // router.replace("/");
     } catch (error: any) {
       console.error(error.message);
     }
@@ -64,6 +104,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      const user = auth.currentUser;
+      if (user) {
+        const profileDoc = await getDoc(doc(db, "users", user.uid));
+        if (profileDoc.exists()) {
+          setProfileData(profileDoc.data());
+        }
+      }
     } catch (error: any) {
       throw new Error(error);
     }
@@ -73,6 +120,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      setCurrentUser(null);
+      setProfileData(null);
     } catch (error: any) {
       console.error(error.message);
     }
@@ -80,6 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const value: AuthContextType = {
     currentUser,
+    profileData,
     signUp,
     signIn,
     signOut,
