@@ -15,4 +15,5 @@ export default {
   arrowRight: require("@/assets/icons/arrowRight.png"),
   eye: require("@/assets/icons/eye.png"),
   eyeHide: require("@/assets/icons/eye-hide.png"),
+  logout: require("@/assets/icons/logout.png"),
 };

@@ -93,6 +93,46 @@ const data: Product[] = [
       "silver",
     ],
   },
+  {
+    id: "004",
+    name: "Cherry Table Covers",
+    description: "PVC golden cherry table cover",
+    category: "Table Covers",
+    lowerPrice: 65,
+    upperPrice: 130,
+    mainImage:
+      "https://www.jiomart.com/images/product/original/rvj7wept18/aradent-coin-design-silver-lace-transparent-pvc-center-table-cover-size-40x60-inches-product-images-orvj7wept18-p598303555-0-202302111224.jpg?im=Resize=(1000,1000)",
+    otherImages: [
+      "https://m.media-amazon.com/images/I/61nojvrS6SL._AC_UF894,1000_QL80_.jpg",
+    ],
+    variations: {
+      size: ['40" x 60"', '45" x 70"', '54" x 78"', '60" x 90"'],
+      type: ["Golden Lace", "Panel"],
+      aaloo: ["dtf", "ftft", "ftftf", "tftft", "ftdft"],
+    },
+    keywords: [
+      "diamond",
+      "pvc",
+      "clear",
+      "40 60 90 54 78",
+      "4 seater",
+      "6 seater",
+      "transparent",
+      "coin",
+      "golden",
+      "silver",
+    ],
+    unavailableCombinations: [
+      // { size: '40" x 60"', type: "Panel" },
+      // { size: '40" x 60"', type: "Golden Lace", aaloo:"dtf" },
+      { size: '40" x 60"', type: "Golden Lace" },
+      { size: '40" x 60"', aaloo: "dtf" },
+
+      { type: "Panel", size: '45" x 70"' },
+      { type: "Panel", size: '54" x 78"' },
+      { type: "Panel", size: '60" x 90"',aaloo:"ftftf" },
+    ],
+  },
 ];
 
 export default data;

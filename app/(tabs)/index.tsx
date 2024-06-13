@@ -177,24 +177,24 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView className="h-full bg-zinc-150 w-full">
+    <SafeAreaView className="flex-1 bg-zinc-150 w-full items-center justify-center">
       {/* <ScrollView className="px-4"> */}
-      <View className="flex flex-row justify-between items-center mt-0.4 px-2 gap-3">
+      <View className="w-full h-[60px] flex flex-row justify-center gap-3 items-center mt-5 px-2">
         {/* <Image source={images.logo} resizeMode="contain" className="w-6 h-6" /> */}
-        <View className="flex flex-row justify-center items-center h-20 w-20">
+        <View className="w-1/5 h-full items-center justify-center overflow-hidden">
           <Image
             source={images.logo}
             resizeMode="contain"
             className="w-full h-full"
           />
         </View>
-        <View className="flex flex-col justify-center items-center">
-          <Text className="text-black font-lbold text-3xl">JAINCO DECOR</Text>
-          <Text className="text-lg text-black font-rregular">
+        <View className="flex flex-col justify-center items-center overflow-hidden">
+          <Text className="text-black font-lbold text-[28px]">JAINCO DECOR</Text>
+          <Text className="text-[16px] text-black font-rregular mt-0 pt-0 ">
             Decor your Dream Home
           </Text>
         </View>
-        <CartWishlistIcons />
+        {/* <CartWishlistIcons /> */}
       </View>
       <View className="mt-4 px-4 flex flex-col">
         <SearchInput />

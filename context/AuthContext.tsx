@@ -10,11 +10,12 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
-  db
+  db,
 } from "@/services/firebase";
-import { User } from "firebase/auth";
-import {collection, doc, setDoc, getDoc} from "firebase/firestore"
+import { User, sendEmailVerification } from "firebase/auth";
+import { collection, doc, setDoc, getDoc } from "firebase/firestore";
 import { router } from "expo-router";
+import { Alert } from "react-native";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -56,9 +57,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Firebase Auth Listener
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        const profileDoc = await getDoc(doc(db, "users", user.uid));
+      if (user?.emailVerified) {
+        setCurrentUser(user);
+        // } else {
+        //   setCurrentUser(null);
+      }
+      if (currentUser != null) {
+        const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
+        console.log("profile fetched");
         if (profileDoc.exists()) {
           setProfileData(profileDoc.data());
         }
@@ -69,13 +75,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     });
 
     return unsubscribe;
-  }, []);
+  }, [currentUser]);
 
   // Sign Up Function
-  const signUp = async (form:UserForm) => {
+  const signUp = async (form: UserForm) => {
     try {
-      const credentials = await createUserWithEmailAndPassword(auth, form.email, form.password);
-      const profile = credentials.user
+      const credentials = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+      const profile = credentials.user;
+      // Send verification email
+      await sendEmailVerification(profile);
       await setDoc(doc(db, "users", profile.uid), {
         name: form.name,
         email: form.email,
@@ -83,47 +95,63 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         pincode: form.pincode,
         districtName: form.districtName,
         stateName: form.stateName,
-        role:"customer"
+        role: "customer",
       });
-      setProfileData({
-        name: form.name,
-        email: form.email,
-        gstin: form.gstin,
-        pincode: form.pincode,
-        districtName: form.districtName,
-        stateName: form.stateName,
-        role:"customer"
-      });
+      // setProfileData({
+      //   name: form.name,
+      //   email: form.email,
+      //   gstin: form.gstin,
+      //   pincode: form.pincode,
+      //   districtName: form.districtName,
+      //   stateName: form.stateName,
+      //   role:"customer"
+      // });
       // router.replace("/");
+      // await signOut();
+      Alert.alert(
+        "Verification email sent. Please verify your email before logging in."
+      );
+      router.replace("/sign-in");
     } catch (error: any) {
       console.error(error.message);
+      throw new Error(error.message);
     }
   };
 
   // Sign In Function
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       await signInWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
-      if (user) {
-        const profileDoc = await getDoc(doc(db, "users", user.uid));
-        if (profileDoc.exists()) {
-          setProfileData(profileDoc.data());
-        }
+      if (!user?.emailVerified) {
+        await signOut();
+        throw new Error("Please verify your email before signing in.");
       }
+      setLoading(false);
+      // if (user!=null) {
+      //   const profileDoc = await getDoc(doc(db, "users", user.uid));
+      //   if (profileDoc.exists()) {
+      //     setProfileData(profileDoc.data());
+      //   }
+      // }
     } catch (error: any) {
       throw new Error(error);
+      setLoading(false);
     }
   };
 
   // Sign Out Function
   const signOut = async () => {
     try {
+      setLoading(true);
       await firebaseSignOut(auth);
       setCurrentUser(null);
       setProfileData(null);
+      setLoading(false);
     } catch (error: any) {
       console.error(error.message);
+      setLoading(false);
     }
   };
 

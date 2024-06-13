@@ -1,9 +1,9 @@
 import { Tabs, Stack } from "expo-router";
 import { icons } from "@/constants";
-import React from "react";
+import React, { useContext } from "react";
 import { Image, Text, View, useColorScheme } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
-
+import { CartContext } from "@/context/CartWishListContext";
 interface TabIconProps {
   icon: any;
   color: string;
@@ -12,15 +12,36 @@ interface TabIconProps {
 }
 
 const TabIcon: React.FC<TabIconProps> = ({ icon, color, name, focused }) => {
+  const cartContext = useContext(CartContext);
+  const cart = cartContext?.cart || [];
+
   return (
     <View className="items-center justify-center gap-2">
-      <Image
-        source={icon}
-        resizeMode="contain"
-        tintColor={color}
-        className="w-6 h-6"
-      />
-
+      <View>
+        <Image
+          source={icon}
+          resizeMode="contain"
+          tintColor={color}
+          className="w-6 h-6"
+        />
+        {name === "Cart" && cart.length > 0 && (
+          <View
+            style={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              backgroundColor: "#dcb64a",
+              borderRadius: 10,
+              width: 20,
+              height: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ color: "black", fontSize: 10 }}>{cart.length}</Text>
+          </View>
+        )}
+      </View>
       <Text
         className={`${
           focused ? "font-lbold" : "font-rregular"
@@ -77,14 +98,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="points"
+        name="cart"
         options={{
-          title: "Points",
+          title: "Cart",
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={icons.points}
+              icon={icons.cart}
               color={color}
-              name="Points"
+              name="Cart"
               focused={focused}
             />
           ),
@@ -101,7 +122,7 @@ export default function TabLayout() {
               name="Profile"
               focused={focused}
             />
-          ),  
+          ),
         }}
       />
       <Tabs.Screen

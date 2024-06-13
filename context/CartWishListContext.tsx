@@ -2,7 +2,6 @@ import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Product } from "@/lib/types";
 import { Alert } from "react-native";
-
 interface CartItem {
   skuId: string;
   name: string;
@@ -67,6 +66,7 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
 
     saveCart();
     console.log("cart", cart);
+    
   }, [cart]);
 
   // Save wishlist to AsyncStorage whenever it changes

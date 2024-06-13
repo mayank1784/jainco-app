@@ -53,11 +53,11 @@ const SignUp: React.FC = () => {
     pincode: "",
   });
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const nameRegex = /^[a-zA-Z ]{2,30}$/;
   const gstinRegex =
-    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    /^[0-9]{2}[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}[1-9A-Za-z]{1}[Zz][0-9A-Za-z]{1}$/;
   const emailRegex =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   const passRegex =
@@ -214,11 +214,19 @@ const SignUp: React.FC = () => {
 
     if (isValid) {
       setIsSubmitting(true);
-      await signUp(lowerCaseForm);
-      setIsSubmitting(false);
-      Alert.alert("Success", "Form submitted successfully!");
-      console.log("Form submitted successfully:", lowerCaseForm);
-      router.replace("/");
+      signUp(lowerCaseForm)
+        .then(() => {
+          setIsSubmitting(false);
+        })
+        .then(() => {
+          Alert.alert("Success", "Form submitted successfully!");
+          // console.log("Form submitted successfully:", lowerCaseForm);
+          router.replace("/sign-in");
+        })
+        .catch((error: any) => {
+          Alert.alert("Error", error.message);
+          setIsSubmitting(false);
+        });
     } else {
       console.log("Form has validation errors. Cannot submit.");
       Alert.alert("Error", "Form has validation errors. Cannot submit.");
@@ -304,7 +312,7 @@ const SignUp: React.FC = () => {
             <Text style={{ color: "red" }}>{errors.pincode}</Text>
           ) : null}
           {isLoading ? (
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={"#dcb64a"} />
           ) : (
             <>
               <FormField

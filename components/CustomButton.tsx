@@ -27,7 +27,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       }`}
       disabled={isLoading}
     >
-      <Text className={`text-primary font-psemibold text-lg ${textStyles}`}>
+      <Text className={`text-primary font-iregular text-lg ${textStyles}`}>
         {title}
       </Text>
     </TouchableOpacity>
