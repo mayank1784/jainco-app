@@ -97,17 +97,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         stateName: form.stateName,
         role: "customer",
       });
-      // setProfileData({
-      //   name: form.name,
-      //   email: form.email,
-      //   gstin: form.gstin,
-      //   pincode: form.pincode,
-      //   districtName: form.districtName,
-      //   stateName: form.stateName,
-      //   role:"customer"
-      // });
-      // router.replace("/");
-      // await signOut();
+      
       Alert.alert(
         "Verification email sent. Please verify your email before logging in."
       );
@@ -129,12 +119,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error("Please verify your email before signing in.");
       }
       setLoading(false);
-      // if (user!=null) {
-      //   const profileDoc = await getDoc(doc(db, "users", user.uid));
-      //   if (profileDoc.exists()) {
-      //     setProfileData(profileDoc.data());
-      //   }
-      // }
+ 
     } catch (error: any) {
       throw new Error(error);
       setLoading(false);

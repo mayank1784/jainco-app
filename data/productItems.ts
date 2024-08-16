@@ -1,5 +1,28 @@
-import { Product } from "@/lib/types";
-const data: Product[] = [
+interface Variations {
+  // [key: string]: string[] | (string | string[])[];
+  [key: string]: (string | [string, string])[];
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  lowerPrice: number;
+  upperPrice: number;
+  mainImage: string;
+  // otherImages: string[]; optional attribute
+  variations: Variations;
+  keywords: string[];
+  [key: string]: any; // For any additional dynamic properties
+}
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  [key: string]: any;
+}
+const data:Product[] = [
   {
     id: "001",
     name: "Kumkum Table Cover",
@@ -123,11 +146,8 @@ const data: Product[] = [
       "silver",
     ],
     unavailableCombinations: [
-      // { size: '40" x 60"', type: "Panel" },
-      // { size: '40" x 60"', type: "Golden Lace", aaloo:"dtf" },
       { size: '40" x 60"', type: "Golden Lace" },
       { size: '40" x 60"', aaloo: "dtf" },
-
       { type: "Panel", size: '45" x 70"' },
       { type: "Panel", size: '54" x 78"' },
       { type: "Panel", size: '60" x 90"',aaloo:"ftftf" },

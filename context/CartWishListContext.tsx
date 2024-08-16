@@ -2,12 +2,8 @@ import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Product } from "@/lib/types";
 import { Alert } from "react-native";
-interface CartItem {
-  skuId: string;
-  name: string;
-  category: string;
-  qty: number;
-}
+import { CartItem } from "@/lib/types";
+
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: CartItem) => void;
@@ -66,7 +62,6 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
 
     saveCart();
     console.log("cart", cart);
-    
   }, [cart]);
 
   // Save wishlist to AsyncStorage whenever it changes
@@ -87,7 +82,21 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
 
   const addToCart = (product: CartItem) => {
     // Check if the product already exists in the cart
-    const isDuplicate = cart.some((item) => item.skuId === product.skuId);
+    const isDuplicate = cart.some((item) => {
+        // Check if the productId matches
+        if (item.productId !== product.productId) {
+          return false;
+        }
+    
+        // Check if the product has variations
+        if ('variationId' in product) {
+          // Product has variations, check if the item also has variations and if variationId matches
+          return 'variationId' in item && item.variationId === product.variationId;
+        }
+    
+        // Product does not have variations, item should not have a variationId
+        return !('variationId' in item);
+      })
 
     if (isDuplicate) {
       // Show alert for duplicate item
@@ -103,8 +112,24 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const removeFromCart = (skuId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.skuId !== skuId));
+  const removeFromCart = (productId: string, variationId?: string) => {
+    setCart((prevCart) =>
+      prevCart.filter((item) => {
+        // Check if productId matches
+        if (item.productId !== productId) {
+          return true; // Keep item if productId does not match
+        }
+  
+        // Check if variationId is provided
+        if (variationId !== undefined) {
+          // Check if item has variationId and it matches
+          return 'variationId' in item ? item.variationId !== variationId : true;
+        }
+  
+        // If no variationId is provided, ensure item does not have variationId
+        return !('variationId' in item);
+      })
+    );
   };
 
   const addToWishlist = (product: Product) => {
