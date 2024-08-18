@@ -14,6 +14,8 @@ export const findUnavailableCombinations = (
     variationTypes: VariationTypes,
     variations: Variation[]
   ): { combination: VariationType; reason: string }[] => {
+
+  
     const keys = Object.keys(variationTypes);
     const allCombinations = cartesianProduct(
       keys.map((key) => variationTypes[key])

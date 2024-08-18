@@ -1,6 +1,6 @@
 import { icons } from "@/constants";
-import React, { useState, useEffect, useContext, useMemo } from "react";
-import HTMLView from 'react-native-htmlview';
+import React, { useState, useEffect, useContext, useCallback } from "react";
+import HTMLView from "react-native-htmlview";
 import { useWindowDimensions } from "react-native";
 import {
   Text,
@@ -19,10 +19,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Product,
   VariationType,
+  Variation,
   UnavailableCombinations,
 } from "@/lib/types";
 import { CartContext } from "@/context/CartWishListContext";
-import { fetchProductData } from "@/services/firebaseFunctions";
+import {
+  fetchProductSnapshot,
+  fetchVariationsSnapshot,
+} from "@/services/firebaseFunctions";
 import { findUnavailableCombinations } from "@/lib/utilityFunctions";
 
 const { width: viewportWidth } = Dimensions.get("window");
@@ -30,6 +34,7 @@ const { width: viewportWidth } = Dimensions.get("window");
 const ProductPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [demoProduct, setDemoProduct] = useState<Product | null>(null);
+  const [variations, setVariations] = useState<Variation[] | null>(null);
   const [error, setError] = useState<any>(null);
   const [price, setPrice] = useState<number | null>(null);
   const [selectedAttributes, setSelectedAttributes] = useState<VariationType>(
@@ -37,9 +42,9 @@ const ProductPage: React.FC = () => {
   ); //handling variation selection
   const [productName, setProductName] = useState<string | "">("");
   const [unavailableComb, setUnavailableComb] =
-    useState<UnavailableCombinations | null>(null);
+    useState<UnavailableCombinations>([]);
   const [images, setImages] = useState<string[]>([]);
-  const [mainImage, setMainImage] = useState<string>("");
+
   const [quantity, setQuantity] = useState<number>(10);
 
   const [activeSlide, setActiveSlide] = useState(0);
@@ -50,39 +55,51 @@ const ProductPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    let unsubscribeProduct: (() => void) | undefined;
+    let unsubscribeVariations: (() => void) | undefined;
+
+    const fetchData = async () => {
       try {
-        setLoading(true); // Start loading
-        const prodData = await fetchProductData({ id: "ry7FcIFpnOruth613BoE" });
-        // const prodData = await fetchProductData({ id: "Dg9Gry82ATX2dif5Gbfv" });
-        setDemoProduct(prodData); // Set fetched data
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false); // Ensure loading is false even if an error occurs
+        unsubscribeProduct = fetchProductSnapshot(
+          { id: "e48nyI0Yjs5DPs0xsYAT" },
+          (product: Product | null, error?: Error) => {
+            if (error) {
+              setError(error.message);
+              setLoading(false);
+            } else if (product) {
+              setDemoProduct(product);
+              setLoading(false);
+            }
+          }
+        );
+
+        unsubscribeVariations = fetchVariationsSnapshot(
+          "e48nyI0Yjs5DPs0xsYAT",
+          (variations: Variation[] | null, error?: Error) => {
+            if (error) {
+              setError(error.message);
+            } else if (variations) {
+              setVariations(variations);
+            }
+          }
+        );
+      } catch (err) {
+        setError("Failed to fetch product data. Please try again later.");
+        setLoading(false);
       }
     };
 
-    loadData();
-  }, []);
+    fetchData();
 
-  useEffect(() => {
-    if (!demoProduct || !selectedAttributes) return;
-  
-    // Find the variation matching the selected attributes
-    const selectedVariation = demoProduct.variations?.find((variation) => {
-      return Object.entries(selectedAttributes).every(([key, value]) => {
-        return variation.variationType[key] === value;
-      });
-    });
-  
-    // Update the price state based on the selected variation
-    if (selectedVariation) {
-      setPrice(selectedVariation.price);
-    } else {
-      setPrice(null); // No matching variation found
-    }
-  }, [selectedAttributes, demoProduct]);
+    return () => {
+      if (typeof unsubscribeProduct === "function") {
+        unsubscribeProduct();
+      }
+      if (typeof unsubscribeVariations === "function") {
+        unsubscribeVariations();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (demoProduct) {
@@ -91,77 +108,115 @@ const ProductPage: React.FC = () => {
         ...(demoProduct.otherImages || []),
       ];
       setImages(loadedImages);
-      setMainImage(demoProduct.mainImage);
       setProductName(demoProduct.name);
+
+      if (variations) {
+        const unava = findUnavailableCombinations(
+          demoProduct.variationTypes ?? {},
+          variations
+        );
+        setUnavailableComb(unava);
+      }
     }
-  }, [demoProduct]);
-  useEffect(() => {
-    if (images.length > 0 || mainImage || productName) {
-      console.log("Images:", images);
-      console.log("Main Image:", mainImage);
-      console.log("Product Name:", productName);
-    }
-  }, [images, mainImage, productName]);
+  }, [demoProduct, variations]);
 
   useEffect(() => {
-    if (unavailableComb && demoProduct) {
-      console.log("prod: ", JSON.stringify(demoProduct, null, 2));
-      console.log("unavai: ", JSON.stringify(unavailableComb, null, 2));
-    }
-  }, [unavailableComb, demoProduct]);
+    if (!demoProduct) return;
 
-  const unavailableCombinations = useMemo(() => {
-    if (
-      demoProduct?.variationTypes &&
-      demoProduct?.variations &&
-      demoProduct.variations.length > 0
-    ) {
-      return findUnavailableCombinations(
-        demoProduct.variationTypes,
-        demoProduct.variations
-      );
-    }
-    return [];
-  }, [demoProduct]);
+    const updatedProductName =
+      demoProduct.name +
+      (Object.values(selectedAttributes).length > 0
+        ? ` (${Object.values(selectedAttributes).join(", ")})`
+        : "");
 
-  useEffect(() => {
-    if (!demoProduct || demoProduct.variations?.length === 0) {
-      // No variations to process, set loading to false
-      setLoading(false);
-    }
-
-    if (unavailableCombinations.length > 0) {
-      setUnavailableComb(unavailableCombinations);
-      setLoading(false); // End loading once unavailable combinations are set
-    }
-  }, [unavailableCombinations, demoProduct]);
-
-  useEffect(() => {
-    updateProductName();
+    setProductName(updatedProductName);
   }, [selectedAttributes, demoProduct]);
 
-  const updateProductName = () => {
-    if (!demoProduct) return;
-    let updatedProductName = demoProduct.name;
-    const selectedValues = Object.values(selectedAttributes).map((value) => {
-      return value;
-    });
-    if (selectedValues.length > 0) {
-      updatedProductName += " (" + selectedValues.join(", ") + ")";
+
+  useEffect(() => {
+    if (!demoProduct || !demoProduct.variationTypes || !variations) return;
+  
+    const findFirstAvailableCombination = () => {
+      const initialSelectedAttributes: VariationType = {};
+      const attributeNames = Object.keys(demoProduct.variationTypes ?? []);
+  
+      // Recursive function to search for the first available combination
+      const searchCombination = (
+        index: number,
+        selected: VariationType
+      ): VariationType | null => {
+        // Base case: all attributes have been selected
+        if (index === attributeNames.length) {
+          // Check if the selected combination is available
+          return isCombinationUnavailable(selected, unavailableComb)
+            ? null // Combination is unavailable, return null
+            : selected; // Combination is available, return it
+        }
+  
+        const attributeName = attributeNames[index];
+  
+        // Iterate over each value of the current attribute
+        for (const value of demoProduct.variationTypes?.[attributeName] ?? []) {
+          const testAttributes = { ...selected, [attributeName]: value };
+  
+          // Recursively search the next attribute level
+          const result = searchCombination(index + 1, testAttributes);
+  
+          if (result) return result; // If a valid combination is found, return it
+        }
+  
+        return null; // No valid combinations found at this level
+      };
+  
+      return searchCombination(0, initialSelectedAttributes);
+    };
+  
+    // Find and set the first available combination of attributes
+    const firstAvailableCombination = findFirstAvailableCombination();
+  
+    if (firstAvailableCombination) {
+      setSelectedAttributes(firstAvailableCombination);
     }
-    setProductName(updatedProductName);
-  };
+  }, [demoProduct, unavailableComb, variations]);
+  
+
+  useEffect(() => {
+    if (!variations || !selectedAttributes) return;
+
+    // Find the variation matching the selected attributes
+    const selectedVariation = variations?.find((variation) => {
+      return Object.entries(selectedAttributes).every(([key, value]) => {
+        return variation.variationType[key] === value;
+      });
+    });
+
+    // Update the price state based on the selected variation
+    if (selectedVariation) {
+      // console.log('selected variation: ',selectedVariation)
+      setPrice(selectedVariation.price);
+      if (selectedVariation.images && selectedVariation.images.length > 0) {
+        setImages((prevImages) => [
+          ...(selectedVariation.images || []),
+          ...prevImages,
+        ]);
+      }
+    } else {
+      setPrice(null); // No matching variation found
+    }
+  }, [selectedAttributes, variations]);
 
   const isCombinationUnavailable = (
-    selectedAttributes: VariationType
+    selectedAttributes: VariationType,
+    unavailableCombinations: UnavailableCombinations
   ): boolean => {
-    if (!unavailableComb || unavailableComb.length === 0) return false;
+    if (!unavailableCombinations || unavailableCombinations.length === 0)
+      return false;
 
     // Convert selected attributes to an array of [key, value] pairs
     const selectedEntries = Object.entries(selectedAttributes);
 
     // Check if any combination in unavailableComb matches the selectedAttributes
-    return unavailableComb.some((combination) => {
+    return unavailableCombinations.some((combination) => {
       return selectedEntries.every(([attribute, value]) => {
         // Check if the combination has this attribute with the same value
         return combination.combination[attribute] === value;
@@ -173,56 +228,12 @@ const ProductPage: React.FC = () => {
     setSelectedAttributes((prevSelected) => {
       const newSelected = { ...prevSelected, [attributeName]: value };
 
-      if (!isCombinationUnavailable(newSelected)) {
+      if (!isCombinationUnavailable(newSelected, unavailableComb)) {
         return newSelected;
       }
       return prevSelected; // If unavailable, keep previous selection
     });
   };
-
-  useEffect(() => {
-    if (!demoProduct || !demoProduct.variationTypes) return;
-  
-    const findFirstAvailableCombination = () => {
-      const attributeNames = Object.keys(demoProduct.variationTypes ?? {});
-      const selectedAttributes: VariationType = {};
-  
-      for (const attributeName of attributeNames) {
-        const attributeValues = demoProduct.variationTypes?.[attributeName] ?? [];
-  
-        // Loop through each value of the current attribute
-        for (const value of attributeValues) {
-          // Create a test combination by adding the current value to selectedAttributes
-          const testAttributes = {
-            ...selectedAttributes,
-            [attributeName]: value,
-          };
-  
-          // Check if this combination is available
-          if (!isCombinationUnavailable(testAttributes)) {
-            selectedAttributes[attributeName] = value;
-            break; // Break out of the loop once a valid value is found
-          }
-        }
-  
-        // If no valid value is found for this attribute, return null (invalid combination)
-        if (!selectedAttributes[attributeName]) {
-          return null;
-        }
-      }
-  
-      return selectedAttributes;
-    };
-  
-    const firstAvailableCombination = findFirstAvailableCombination();
-  
-    if (firstAvailableCombination) {
-      setSelectedAttributes(firstAvailableCombination);
-    } else {
-      console.log("No available combination found");
-      setSelectedAttributes({});
-    }
-  }, [demoProduct]);
 
   const viewableItemChanges = ({
     viewableItems,
@@ -237,7 +248,7 @@ const ProductPage: React.FC = () => {
   const handleAddToCart = (quantity: number) => {
     if (!demoProduct || !selectedAttributes) return;
 
-    const selectedVariation = demoProduct.variations?.find((variation) => {
+    const selectedVariation = variations?.find((variation) => {
       return Object.entries(selectedAttributes).every(([key, value]) => {
         return variation.variationType[key] === value;
       });
@@ -251,8 +262,8 @@ const ProductPage: React.FC = () => {
         productId: demoProduct.id,
         price: demoProduct.lowerPrice,
         productMainImage: demoProduct.mainImage,
-      }
-      addToCart(cartItem)
+      };
+      addToCart(cartItem);
       return;
     }
     // Prepare the cart item details
@@ -268,7 +279,7 @@ const ProductPage: React.FC = () => {
     };
 
     addToCart(cartItem);
-    return
+    return;
   };
 
   const { width } = useWindowDimensions();
@@ -326,21 +337,21 @@ const ProductPage: React.FC = () => {
                 {demoProduct.category}
               </Text>
 
-           
-              <HTMLView value={demoProduct.description} 
-              style={[styles.htmlContainer, { width: width * 0.9 }]} // Adjust width relative to screen size
+              <HTMLView
+                value={demoProduct.description}
+                style={[styles.htmlContainer, { width: width * 0.9 }]} // Adjust width relative to screen size
               />
             </View>
 
             {/* Price */}
             <View className="flex flex-1 flex-row justify-start items-baseline gap-3">
-            <Text className="text-2xl font-lbold text-primary mt-2">
-            ₹{price !== null ? price : demoProduct.lowerPrice}
-            </Text>
-            <Text className="text-primary-200 mt-1 font-rregular">
-              (₹{demoProduct.lowerPrice} - ₹{demoProduct.upperPrice})
+              <Text className="text-2xl font-lbold text-primary mt-2">
+                ₹{price !== null ? price : demoProduct.lowerPrice}
               </Text>
-              </View>
+              <Text className="text-primary-200 mt-1 font-rregular">
+                (₹{demoProduct.lowerPrice} - ₹{demoProduct.upperPrice})
+              </Text>
+            </View>
 
             {/* Stock Status */}
             <Text className="text-green-500 mt-1 font-rregular">In Stock</Text>
@@ -359,10 +370,13 @@ const ProductPage: React.FC = () => {
                         {demoProduct.variationTypes?.[attributeName]?.length ? (
                           demoProduct.variationTypes[attributeName].map(
                             (value: string, index: number) => {
-                              const isDisabled = isCombinationUnavailable({
-                                ...selectedAttributes,
-                                [attributeName]: value,
-                              });
+                              const isDisabled = isCombinationUnavailable(
+                                {
+                                  ...selectedAttributes,
+                                  [attributeName]: value,
+                                },
+                                unavailableComb
+                              );
                               const isSelected =
                                 selectedAttributes[attributeName] === value;
                               return (
@@ -467,7 +481,9 @@ const ProductPage: React.FC = () => {
         </ScrollView>
       ) : error ? (
         <View className="items-center justify-center flex-1 h-full w-full">
-          <Text className="font-lbold">Error! Nothing Fetched</Text>
+          <Text className="font-lbold">
+            Error! Nothing Fetched {JSON.stringify(error)}
+          </Text>
         </View>
       ) : (
         <View className="items-center justify-center flex-1 h-full w-full">

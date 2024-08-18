@@ -15,7 +15,7 @@ import CustomButton from "@/components/CustomButton";
 import { Link, router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 
-interface Form {
+interface SignUpForm {
   name: string;
   email: string;
   password: string;
@@ -36,7 +36,7 @@ interface Errors {
 const SignUp: React.FC = () => {
   const { signUp } = useAuth();
 
-  const [form, setForm] = useState<Form>({
+  const [form, setForm] = useState<SignUpForm>({
     name: "",
     email: "",
     password: "",
@@ -180,7 +180,7 @@ const SignUp: React.FC = () => {
   };
 
   const handleChange = (
-    field: keyof Form,
+    field: keyof SignUpForm,
     value: string,
     validateFn: (value: string) => boolean | Promise<boolean>
   ) => {
@@ -189,6 +189,7 @@ const SignUp: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     const lowerCaseForm = {
       name: form.name.toLowerCase(),
       email: form.email.toLowerCase(),
@@ -213,7 +214,7 @@ const SignUp: React.FC = () => {
       isPincodeValid;
 
     if (isValid) {
-      setIsSubmitting(true);
+     
       signUp(lowerCaseForm)
         .then(() => {
           setIsSubmitting(false);
@@ -226,9 +227,10 @@ const SignUp: React.FC = () => {
         .catch((error: any) => {
           Alert.alert("Error", error.message);
           setIsSubmitting(false);
-        });
+        }).finally(()=>setIsSubmitting(false));
     } else {
       console.log("Form has validation errors. Cannot submit.");
+      setIsSubmitting(false)
       Alert.alert("Error", "Form has validation errors. Cannot submit.");
     }
   };

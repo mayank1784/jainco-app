@@ -326,7 +326,7 @@
 // export default ProductPage;
 import { icons } from "@/constants";
 import React, { useState, useEffect, useContext, useMemo } from "react";
-import RenderHTML from "react-native-render-html";
+// import RenderHTML from "react-native-render-html";
 import { useWindowDimensions } from "react-native";
 import {
   Text,
