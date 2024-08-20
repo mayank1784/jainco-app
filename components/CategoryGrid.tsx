@@ -7,10 +7,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { styled } from "nativewind";
 import { images } from "@/constants";
 import { router, usePathname } from "expo-router";
+import { Category } from "@/lib/types";
 
 const { width } = Dimensions.get("window");
 const ITEM_SIZE = (width - 48) / 2;
@@ -22,29 +24,30 @@ interface Item {
 }
 
 interface FlatListGridProps {
-  data: Item[];
-  onPressItem?: (item: Item) => void;
+  data: Category[];
+  onPressItem?: (item: Category) => void;
   onEndReachedThreshold?: number;
   onEndReached?: () => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
 const StyledView = styled(View);
 
 const CategoryGrid: React.FC<FlatListGridProps> = ({
   data,
-  onPressItem,
   onEndReachedThreshold,
   onEndReached,
+  onRefresh,
+  refreshing,
 }) => {
   const pathname = usePathname();
-  const renderItem = ({ item }: { item: Item }) => (
+  const renderItem = ({ item }: { item: Category }) => (
     <TouchableOpacity
       onPress={() => {
-        // if (pathname.startsWith("/search/category")) {
-        //   router.setParams({ category: item.title });
-        // } else {
-        router.push(`/search/category/${item.title}`);
-        // }
+        router.push(
+          `/search/category/${item.id}?name=${item.name}&image=${item.image}&description=${item.description}`
+        );
       }}
       style={{
         width: ITEM_SIZE,
@@ -56,14 +59,14 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
     >
       <View className="w-full bg-white h-[70%] rounded-t-xl">
         <Image
-          source={{ uri: item.photoUrl }}
+          source={{ uri: item.image }}
           resizeMode="cover"
           className="flex h-full w-full rounded-t-xl"
         />
       </View>
       <View className="w-full bg-primary h-[30%] rounded-b-xl flex justify-center items-center">
         <Text className=" text-white font-iregular text-base leading-5 text-center flex-wrap shrink px-2 capitalize">
-          {item.title}
+          {item.name}
         </Text>
       </View>
     </TouchableOpacity>
@@ -82,7 +85,12 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
       className="mt-2 mx-0" // Adjust border style as needed
       onEndReachedThreshold={onEndReachedThreshold || 0.5}
       onEndReached={onEndReached}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
       showsVerticalScrollIndicator={false}
+      ListFooterComponent={
+        refreshing ? <ActivityIndicator size="small" color="#dcb64a" /> : null
+      }
     />
   );
 };

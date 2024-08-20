@@ -18,21 +18,24 @@ import { icons, images } from "@/constants";
 import CartWishlistIcons from "@/components/CartWishListIcons";
 import { CartContext, WishlistContext } from "@/context/CartWishListContext";
 import ProductCard from "@/components/ProductCard";
-interface Product {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  lowerPrice: number;
-  upperPrice: number;
-}
+import { fetchProductsByCategory } from "@/services/firebaseFunctions";
+import { ProductSmall } from "@/lib/types";
+
 const CategorySearchScreen = () => {
-  const { category } = useLocalSearchParams<{ category: string }>();
+  
+  // const { category } = useLocalSearchParams<{ category: string }>();
+  const { category:categoryId, name:categoryName, image:categoryImage, description:categoryDescription } = useLocalSearchParams<{ category: string; name: string, image:string, description:string }>();
+  // const { category, name, image, description } = useLocalSearchParams<{
+  //   category: string;
+  //   name: string;
+  //   image: string;
+  //   description: string;
+  // }>();
   const [isCovering, setIsCovering] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [data, setData] = useState<Product[]>([]);
+  const [data, setData] = useState<ProductSmall[]>([]);
 
   const { cart, addToCart, removeFromCart, clearCart } = useContext(
     CartContext
@@ -99,23 +102,35 @@ const CategorySearchScreen = () => {
   // For fetching List Data and loading animation
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (categoryId) {
+      fetchData();
+    }
+  }, [categoryId]);
 
-  const fetchData = () => {
+  const fetchData = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setData(DataList); // Assign the fetched data
+    try {
+      const products = await fetchProductsByCategory(categoryId as string);
+      setData(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
       setLoading(false);
-    }, 2000); // Simulate a 2-second fetch time
+    }
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setData(DataList); // Assign the refreshed data
+    try {
+      const refreshedProducts = await fetchProductsByCategory(
+        categoryId as string
+      );
+      setData(refreshedProducts);
+    } catch (error) {
+      console.error("Error refreshing products:", error);
+    } finally {
       setRefreshing(false);
-    }, 2000); // Simulate a 2-second fetch time for refresh
+    }
   };
 
   if (loading) {
@@ -130,7 +145,7 @@ const CategorySearchScreen = () => {
             />
           </View>
           <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
-            {category}
+            {categoryName}
           </Text>
           <CartWishlistIcons />
         </View>
@@ -151,16 +166,15 @@ const CategorySearchScreen = () => {
           />
         </View>
         <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
-          {category}
+          {categoryName}
         </Text>
         <CartWishlistIcons />
       </View>
-      {/* <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden"> */}
 
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ProductCard item={item} />}
+        renderItem={({ item }) => <ProductCard item={item} category={categoryName} />}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -169,15 +183,17 @@ const CategorySearchScreen = () => {
           />
         }
         ListHeaderComponent={() => (
+          <>
           <TouchableOpacity onPress={toggleCovering}>
             <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
               <Image
-                className="flex-1 w-full h-full"
+                className="flex-1 w-full h-full z-99999"
                 resizeMode="cover"
                 source={{
-                  uri: "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
+                uri: categoryImage
                 }}
               />
+             
 
               <Animated.View
                 style={{
@@ -191,6 +207,8 @@ const CategorySearchScreen = () => {
               />
             </View>
           </TouchableOpacity>
+         
+        </>
         )}
         ListFooterComponent={() => (
           <View className="w-full h-auto justify-start items-center mt-2 mb-2">
@@ -206,4 +224,5 @@ const CategorySearchScreen = () => {
 
 export default CategorySearchScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+});

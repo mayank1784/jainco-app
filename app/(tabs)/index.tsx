@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Image,
   ScrollView,
@@ -8,12 +8,15 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   TouchableOpacity,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { icons, images } from "@/constants";
 import SearchInput from "@/components/SearchInput";
 import CategoryGrid from "@/components/CategoryGrid";
 import CartWishlistIcons from "@/components/CartWishListIcons";
+import { fetchCategories } from "@/services/firebaseFunctions";
+import { Category } from "@/lib/types";
 const data = [
   {
     id: "1",
@@ -160,8 +163,27 @@ const data = [
 ];
 export default function Index() {
   const [isEndOfListReached, setIsEndOfListReached] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEndReached = () => {
     setIsEndOfListReached(true);
@@ -175,6 +197,17 @@ export default function Index() {
     }
     setPrevScrollPos(offsetY);
   };
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchData();
+    } catch (error) {
+      console.error("Error refreshing categories:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full items-center justify-center">
@@ -203,11 +236,17 @@ export default function Index() {
         </Text>
         <View className="border border-primary-100 border-dashed mt-3 mx-2"></View>
       </View>
-      <CategoryGrid
-        data={data}
-        onEndReachedThreshold={0.1} // Set a threshold of 50%
-        onEndReached={handleEndReached}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#dcb64a" className="mt-8" />
+      ) : (
+        <CategoryGrid
+          data={categories}
+          onEndReachedThreshold={0.1}
+          onEndReached={handleEndReached}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+        />
+      )}
       {isEndOfListReached && (
         <View className="mt-4 bg-secondary w-full h-10">
           <Text className="text-lg text-center text-primary"> aaloo</Text>

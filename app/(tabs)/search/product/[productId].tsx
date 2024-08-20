@@ -2,6 +2,7 @@ import { icons } from "@/constants";
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import HTMLView from "react-native-htmlview";
 import { useWindowDimensions } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import {
   Text,
   View,
@@ -32,6 +33,7 @@ import { findUnavailableCombinations } from "@/lib/utilityFunctions";
 const { width: viewportWidth } = Dimensions.get("window");
 
 const ProductPage: React.FC = () => {
+  const { productId } = useLocalSearchParams<{ productId: string }>();
   const [loading, setLoading] = useState<boolean>(true);
   const [demoProduct, setDemoProduct] = useState<Product | null>(null);
   const [variations, setVariations] = useState<Variation[] | null>(null);
@@ -61,7 +63,7 @@ const ProductPage: React.FC = () => {
     const fetchData = async () => {
       try {
         unsubscribeProduct = fetchProductSnapshot(
-          { id: "e48nyI0Yjs5DPs0xsYAT" },
+          { id: productId ?? "" },
           (product: Product | null, error?: Error) => {
             if (error) {
               setError(error.message);
@@ -74,7 +76,7 @@ const ProductPage: React.FC = () => {
         );
 
         unsubscribeVariations = fetchVariationsSnapshot(
-          "e48nyI0Yjs5DPs0xsYAT",
+          productId ?? "",
           (variations: Variation[] | null, error?: Error) => {
             if (error) {
               setError(error.message);

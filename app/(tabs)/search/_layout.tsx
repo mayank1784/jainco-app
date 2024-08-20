@@ -6,6 +6,7 @@ export default function SearchLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="[query]" />
       <Stack.Screen name="category" />
+      <Stack.Screen name="product" />
     </Stack>
   );
 }

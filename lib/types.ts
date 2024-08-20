@@ -31,6 +31,14 @@ export interface Product {
   variations?: Variation[];
 }
 
+export interface ProductSmall {
+  id: string;
+  name: string;
+  lowerPrice: number;
+  upperPrice: number;
+  mainImage: string;
+  description: string;
+}
 export interface Variation {
   id:string;
   variationType: VariationType;
