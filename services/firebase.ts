@@ -34,7 +34,7 @@ connectStorageEmulator(storage, emulatorHost, 9199);
 // }
 
 const db = getFirestore(app);
-connectFirestoreEmulator(db, emulatorHost, 8080);
+connectFirestoreEmulator(db, emulatorHost, 8090);
 
 const functions = getFunctions(app);
 connectFunctionsEmulator(functions, emulatorHost, 5001);

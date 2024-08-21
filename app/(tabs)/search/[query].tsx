@@ -98,7 +98,7 @@ const SearchScreen = () => {
           Search Results for {query}
         </Text>
       </View>
-      <FlatList
+      {/* <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <ProductCard item={item} />}
@@ -109,7 +109,7 @@ const SearchScreen = () => {
             colors={["#dcb64a"]}
           />
         }
-      />
+      /> */}
     </SafeAreaView>
   );
 };

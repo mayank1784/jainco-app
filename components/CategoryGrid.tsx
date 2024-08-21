@@ -13,6 +13,7 @@ import { styled } from "nativewind";
 import { images } from "@/constants";
 import { router, usePathname } from "expo-router";
 import { Category } from "@/lib/types";
+import { useCategory } from "@/context/CategoryContex";
 
 const { width } = Dimensions.get("window");
 const ITEM_SIZE = (width - 48) / 2;
@@ -41,13 +42,18 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
   onRefresh,
   refreshing,
 }) => {
+  const { updateCategory } = useCategory();
   const pathname = usePathname();
   const renderItem = ({ item }: { item: Category }) => (
     <TouchableOpacity
       onPress={() => {
-        router.push(
-          `/search/category/${item.id}?name=${item.name}&image=${item.image}&description=${item.description}`
-        );
+        updateCategory({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          image: item.image,
+        });
+        router.push( `/search/category/${item.id}`);
       }}
       style={{
         width: ITEM_SIZE,

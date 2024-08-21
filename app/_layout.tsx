@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import { CartWishlistProvider } from "@/context/CartWishListContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { CategoryProvider } from "@/context/CategoryContex";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -26,6 +27,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <CartWishlistProvider>
+        <CategoryProvider>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(test)" options={{ headerShown: false }} />
@@ -33,6 +35,7 @@ export default function RootLayout() {
           {/* <Stack.Screen name="search/[query]" options={{ headerShown: false }} /> */}
           {/* <Stack.Screen name="+not-found" /> */}
         </Stack>
+        </CategoryProvider>
       </CartWishlistProvider>
     </AuthProvider>
   );

@@ -10,7 +10,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DataList from "@/data/productData";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
@@ -20,22 +20,18 @@ import { CartContext, WishlistContext } from "@/context/CartWishListContext";
 import ProductCard from "@/components/ProductCard";
 import { fetchProductsByCategory } from "@/services/firebaseFunctions";
 import { ProductSmall } from "@/lib/types";
+import { useCategory } from "@/context/CategoryContex";
 
 const CategorySearchScreen = () => {
+  const {category} = useCategory()
+  // const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
   
-  // const { category } = useLocalSearchParams<{ category: string }>();
-  const { category:categoryId, name:categoryName, image:categoryImage, description:categoryDescription } = useLocalSearchParams<{ category: string; name: string, image:string, description:string }>();
-  // const { category, name, image, description } = useLocalSearchParams<{
-  //   category: string;
-  //   name: string;
-  //   image: string;
-  //   description: string;
-  // }>();
   const [isCovering, setIsCovering] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<ProductSmall[]>([]);
+
 
   const { cart, addToCart, removeFromCart, clearCart } = useContext(
     CartContext
@@ -100,38 +96,72 @@ const CategorySearchScreen = () => {
   }, []);
 
   // For fetching List Data and loading animation
+ // Fetch product data
+ const fetchData = useCallback(async () => {
+  setLoading(true);
+  try {
+    const products = await fetchProductsByCategory(category.id || "");
+    setData(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  } finally {
+    setLoading(false);
+  }
+}, [category.id]);
 
-  useEffect(() => {
-    if (categoryId) {
-      fetchData();
-    }
-  }, [categoryId]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const products = await fetchProductsByCategory(categoryId as string);
-      setData(products);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // useEffect(() => {
+  //   if (category.id) {
+  //     fetchData();
+  //   }
+  // }, [category.id]);
 
-  const onRefresh = async () => {
+  // const fetchData = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const products = await fetchProductsByCategory(category.id || "");
+  //     setData(products);
+  //   } catch (error) {
+  //     console.error("Error fetching products:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // const onRefresh = async () => {
+  //   setRefreshing(true);
+  //   try {
+  //     const refreshedProducts = await fetchProductsByCategory(
+  //       category.id as string
+  //     );
+  //     console.log('products fetched')
+  //     setData(refreshedProducts);
+  //   } catch (error) {
+  //     console.error("Error refreshing products:", error);
+  //   } finally {
+  //     setRefreshing(false);
+  //   }
+  // };
+
+   // Refresh the product list
+   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const refreshedProducts = await fetchProductsByCategory(
-        categoryId as string
-      );
+      const refreshedProducts = await fetchProductsByCategory(category.id || "");
+      console.log("products fetched");
       setData(refreshedProducts);
     } catch (error) {
       console.error("Error refreshing products:", error);
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [category.id]);
+
+  useEffect(() => {
+    if (category.id) {
+      fetchData();
+    }
+  }, [category.id, fetchData]);
 
   if (loading) {
     return (
@@ -145,7 +175,7 @@ const CategorySearchScreen = () => {
             />
           </View>
           <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
-            {categoryName}
+            {category.name}
           </Text>
           <CartWishlistIcons />
         </View>
@@ -166,7 +196,7 @@ const CategorySearchScreen = () => {
           />
         </View>
         <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
-          {categoryName}
+          {category.name}
         </Text>
         <CartWishlistIcons />
       </View>
@@ -174,7 +204,9 @@ const CategorySearchScreen = () => {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ProductCard item={item} category={categoryName} />}
+        renderItem={({ item }) => (
+          <ProductCard item={item} category={category.name} />
+        )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -184,31 +216,29 @@ const CategorySearchScreen = () => {
         }
         ListHeaderComponent={() => (
           <>
-          <TouchableOpacity onPress={toggleCovering}>
-            <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
-              <Image
+            <TouchableOpacity onPress={toggleCovering}>
+              <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
+                <Image
                 className="flex-1 w-full h-full z-99999"
                 resizeMode="cover"
                 source={{
-                uri: categoryImage
+                uri: category.image
                 }}
               />
-             
 
-              <Animated.View
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: slideInterpolation,
-                  height: "100%",
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-         
-        </>
+                <Animated.View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: slideInterpolation,
+                    height: "100%",
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          </>
         )}
         ListFooterComponent={() => (
           <View className="w-full h-auto justify-start items-center mt-2 mb-2">
@@ -224,5 +254,4 @@ const CategorySearchScreen = () => {
 
 export default CategorySearchScreen;
 
-const styles = StyleSheet.create({
-});
+const styles = StyleSheet.create({});
