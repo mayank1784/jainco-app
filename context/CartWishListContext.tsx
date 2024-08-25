@@ -61,7 +61,7 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     saveCart();
-    console.log("cart", cart);
+    
   }, [cart]);
 
   // Save wishlist to AsyncStorage whenever it changes

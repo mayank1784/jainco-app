@@ -4,7 +4,6 @@ import {
   FlatList,
   Dimensions,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Image,
   ActivityIndicator,
@@ -94,9 +93,16 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
       refreshing={refreshing}
       onRefresh={onRefresh}
       showsVerticalScrollIndicator={false}
-      ListFooterComponent={
-        refreshing ? <ActivityIndicator size="small" color="#dcb64a" /> : null
-      }
+      // ListFooterComponent={
+      //   refreshing ? <ActivityIndicator size="small" color="#dcb64a" /> : null
+      // }
+      ListFooterComponent={() => (
+        <View className="w-full h-auto justify-start items-center mt-2 mb-2">
+          <Text className="text-base text-primary-200 font-iregular">
+            That's All
+          </Text>
+        </View>
+      )}
     />
   );
 };

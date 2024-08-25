@@ -4,13 +4,14 @@ import {
   collection,
   getDocs,
   onSnapshot,
-  query,
-  where,
 } from "firebase/firestore";
 import { db } from "./firebase"; // Adjust the import path as needed
 import { Category, Product, Variation, ProductSmall } from "@/lib/types";
-import { getFunctions, httpsCallable, HttpsCallableResult } from "firebase/functions";
-
+import {
+  getFunctions,
+  httpsCallable,
+  HttpsCallableResult,
+} from "firebase/functions";
 
 // Initialize Firebase functions
 const functions = getFunctions();
@@ -95,10 +96,16 @@ export const fetchCategories = async (): Promise<Category[]> => {
     const categorySnapshot = await getDocs(categoryCollectionRef);
 
     // Extract category data
-    const categoryList: Category[] = categorySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Category));
+    // Extract and sort category data by the 'name' property
+    const categoryList: Category[] = categorySnapshot.docs
+      .map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as Category)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
 
     return categoryList;
   } catch (error) {
@@ -106,41 +113,21 @@ export const fetchCategories = async (): Promise<Category[]> => {
   }
 };
 
-// Function to fetch products by category ID with specific fields manually selected
-// export const fetchProductsByCategory = async (categoryId: string): Promise<Product[]> => {
-//   try {
-//     const productsRef = collection(db, "products");
-//     const q = query(productsRef, where("category", "==", categoryId));
-//     const querySnapshot = await getDocs(q);
-
-//     // Extract only the necessary fields manually
-//     const productList: Product[] = querySnapshot.docs.map((doc) => {
-//       const data = doc.data();
-//       return {
-//         id: doc.id,
-//         name: data.name, // Select only the needed fields
-//         lowerPrice: data.lowerPrice,
-//         upperPrice: data.upperPrice,
-//         mainImage: data.mainImage,
-//         description: data.description, 
-//       } as Product;
-//     });
-
-//     return productList;
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     throw new Error("Failed to fetch products");
-//   }
-// };
-
-export const fetchProductsByCategory = async (categoryId: string): Promise<ProductSmall[]> => {
+export const fetchProductsByCategory = async (
+  categoryId: string
+): Promise<ProductSmall[]> => {
   try {
-    const fetchProducts = httpsCallable<{ categoryId: string }, { products: ProductSmall[] }>(functions, 'fetchProductsByCategory');
-    
+    const fetchProducts = httpsCallable<
+      { categoryId: string },
+      { products: ProductSmall[] }
+    >(functions, "fetchProductsByCategory");
+
     // Call the Firebase function with categoryId
-    const result: HttpsCallableResult<{ products: ProductSmall[] }> = await fetchProducts({ categoryId });
+    const result: HttpsCallableResult<{ products: ProductSmall[] }> =
+      await fetchProducts({ categoryId });
 
     // Cast result.data to the expected shape
+
     return result.data.products;
   } catch (error) {
     console.error("Error calling fetchProductsByCategory:", error);

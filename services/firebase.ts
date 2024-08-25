@@ -3,7 +3,6 @@
 import { getReactNativePersistence } from "@firebase/auth/dist/rn/index.js";
 import { initializeApp } from "firebase/app";
 import {
-  getAuth,
   connectAuthEmulator,
   signInWithEmailAndPassword,
   signOut,
@@ -34,7 +33,7 @@ connectStorageEmulator(storage, emulatorHost, 9199);
 // }
 
 const db = getFirestore(app);
-connectFirestoreEmulator(db, emulatorHost, 8090);
+connectFirestoreEmulator(db, emulatorHost, 8080);
 
 const functions = getFunctions(app);
 connectFunctionsEmulator(functions, emulatorHost, 5001);

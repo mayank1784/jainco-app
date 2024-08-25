@@ -110,45 +110,12 @@ const CategorySearchScreen = () => {
 }, [category.id]);
 
 
-  // useEffect(() => {
-  //   if (category.id) {
-  //     fetchData();
-  //   }
-  // }, [category.id]);
-
-  // const fetchData = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const products = await fetchProductsByCategory(category.id || "");
-  //     setData(products);
-  //   } catch (error) {
-  //     console.error("Error fetching products:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const onRefresh = async () => {
-  //   setRefreshing(true);
-  //   try {
-  //     const refreshedProducts = await fetchProductsByCategory(
-  //       category.id as string
-  //     );
-  //     console.log('products fetched')
-  //     setData(refreshedProducts);
-  //   } catch (error) {
-  //     console.error("Error refreshing products:", error);
-  //   } finally {
-  //     setRefreshing(false);
-  //   }
-  // };
-
    // Refresh the product list
    const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       const refreshedProducts = await fetchProductsByCategory(category.id || "");
-      console.log("products fetched");
+   
       setData(refreshedProducts);
     } catch (error) {
       console.error("Error refreshing products:", error);

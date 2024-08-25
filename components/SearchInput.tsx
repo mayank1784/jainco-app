@@ -22,7 +22,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ initialQuery }) => {
     }
   };
   return (
-    <View className="border-2 border-primary w-full h-12 px-4 bg-black-100 rounded-2xl focus:border-secondary items-center justify-center flex-row space-x-4">
+    <View className="border-2 border-primary w-full h-10 px-4 bg-black-100 rounded-2xl focus:border-secondary items-center justify-center flex-row space-x-4">
       <TextInput
         className="text-base mt-0.5 text-black flex-1 font-iregular"
         value={query}

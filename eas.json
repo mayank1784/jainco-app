@@ -13,7 +13,17 @@
       "channel": "preview"
     },
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyDNcPc3XU7OzFTToUxSXO8ys-MzXWNVpSs",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "jainco.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "jainco",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "jainco.appspot.com",
+        "EXPO_PUBLIC_FIREBASE_MESSANGING_SENDER_ID": "1089768051203",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:1089768051203:web:d14b82df071a384b217436",
+        "EXPO_PUBLIC_ALGOLIA_SEARCH_API_KEY": "09c00a1cdcb6eb4365f3834409ed7042",
+        "EXPO_PUBLIC_ALGOLIA_APP_ID": "95US8GNWM6"
+      }
     }
   },
   "submit": {

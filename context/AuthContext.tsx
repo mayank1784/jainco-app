@@ -13,7 +13,7 @@ import {
   db,
 } from "@/services/firebase";
 import { User, sendEmailVerification } from "firebase/auth";
-import { collection, doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 
@@ -54,9 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [profileData, setProfileData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
-    if (profileData) console.log('user profile: ',JSON.stringify(profileData,null,2))
-  },[profileData])
+ 
   // Firebase Auth Listener
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -67,7 +65,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
       if (currentUser != null) {
         const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
-        console.log("profile fetched");
+     
         const profileData = profileDoc.data()
         if (profileDoc.exists()) {
           const profile = {
@@ -87,13 +85,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   // Sign Up Function
   const signUp = async (form: UserForm) => {
+    let profile
     try {
       const credentials = await createUserWithEmailAndPassword(
         auth,
         form.email,
         form.password
       );
-      const profile = credentials.user;
+      profile = credentials.user;
       // Send verification email
       await sendEmailVerification(profile);
       await setDoc(doc(db, "users", profile.uid), {
@@ -112,6 +111,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       router.replace("/sign-in");
     } catch (error: any) {
       console.error(error.message);
+      if (profile){
+        await profile.delete()
+        throw new Error("Sign up failed: " + error.message);
+      }
       throw new Error(error.message);
     }
   };

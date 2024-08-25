@@ -1,22 +1,3 @@
-// // types.ts
-// interface Variations {
-//   // [key: string]: string[] | (string | string[])[];
-//   [key: string]: (string | [string, string])[];
-// }
-
-// export interface Product {
-//   id: string;
-//   name: string;
-//   description: string;
-//   category: string;
-//   lowerPrice: number;
-//   upperPrice: number;
-//   mainImage: string;
-//   // otherImages: string[]; optional attribute
-//   variations: Variations;
-//   keywords: string[];
-//   [key: string]: any; // For any additional dynamic properties
-// }
 export interface Product {
   id: string;
   name: string;
@@ -38,9 +19,10 @@ export interface ProductSmall {
   upperPrice: number;
   mainImage: string;
   description: string;
+  variationTypes?: string;
 }
 export interface Variation {
-  id:string;
+  id: string;
   variationType: VariationType;
   price: number;
   stock: number;
@@ -49,14 +31,13 @@ export interface Variation {
   images?: string[];
 }
 
-export interface VariationType{
+export interface VariationType {
   [key: string]: string;
 }
 
 export interface VariationTypes {
   [key: string]: string[];
 }
-
 
 interface CreatedAt {
   seconds: number;
@@ -69,11 +50,11 @@ export interface Category {
   image: string;
 }
 
-export type UnavailableCombinations = UnavailableCombination[]
+export type UnavailableCombinations = UnavailableCombination[];
 
 export interface UnavailableCombination {
-  combination: Record<string,string>
-  reason: string
+  combination: Record<string, string>;
+  reason: string;
 }
 export interface CartContextType {
   cart: Product[];

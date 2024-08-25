@@ -198,7 +198,7 @@ const ProductPage: React.FC = () => {
 
     // Update the price state based on the selected variation
     if (selectedVariation) {
-      // console.log('selected variation: ',selectedVariation)
+ 
       setPrice(selectedVariation.price);
       if (selectedVariation.images && selectedVariation.images.length > 0) {
         updatedImages = [...(selectedVariation.images || []), ...updatedImages];
@@ -500,7 +500,7 @@ const ProductPage: React.FC = () => {
 const styles = StyleSheet.create({
   image: {
     width: viewportWidth,
-    height: 384,
+    height: 300,
     resizeMode: "cover",
     borderRadius: 0,
   },

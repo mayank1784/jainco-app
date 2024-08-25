@@ -1,8 +1,8 @@
 import { Tabs, Stack } from "expo-router";
 import { icons } from "@/constants";
 import React, { useContext } from "react";
-import { Image, Text, View, useColorScheme } from "react-native";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+import { Image, Text, View } from "react-native";
+
 import { CartContext } from "@/context/CartWishListContext";
 interface TabIconProps {
   icon: any;
@@ -16,24 +16,24 @@ const TabIcon: React.FC<TabIconProps> = ({ icon, color, name, focused }) => {
   const cart = cartContext?.cart || [];
 
   return (
-    <View className="items-center justify-center gap-2">
+    <View className="flex items-center justify-center space-y-1">
       <View>
         <Image
           source={icon}
           resizeMode="contain"
           tintColor={color}
-          className="w-6 h-6"
+          className="w-5 h-5"
         />
         {name === "Cart" && cart.length > 0 && (
           <View
             style={{
               position: "absolute",
-              top: -8,
-              right: -8,
+              top: -4,
+              right: -6,
               backgroundColor: "#dcb64a",
               borderRadius: 10,
-              width: 20,
-              height: 20,
+              width: 15,
+              height: 15,
               justifyContent: "center",
               alignItems: "center",
             }}
@@ -45,7 +45,7 @@ const TabIcon: React.FC<TabIconProps> = ({ icon, color, name, focused }) => {
       <Text
         className={`${
           focused ? "font-lbold" : "font-rregular"
-        } text-base text-white`}
+        } text-xs text-white`}
       >
         {name}
       </Text>
@@ -63,7 +63,7 @@ export default function TabLayout() {
           backgroundColor: "#040404",
           borderTopWidth: 2,
           borderTopColor: "#000",
-          height: 75,
+          height: 60,
         },
         headerShown: false,
       }}

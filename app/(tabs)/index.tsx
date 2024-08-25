@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Image,
-  ScrollView,
   Text,
   View,
   Animated,
@@ -11,156 +10,13 @@ import {
   ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { icons, images } from "@/constants";
+import { images } from "@/constants";
 import SearchInput from "@/components/SearchInput";
 import CategoryGrid from "@/components/CategoryGrid";
-import CartWishlistIcons from "@/components/CartWishListIcons";
+
 import { fetchCategories } from "@/services/firebaseFunctions";
 import { Category } from "@/lib/types";
-const data = [
-  {
-    id: "1",
-    title: "Table Covers",
-    photoUrl:
-      "https://tiimg.tistatic.com/fp/1/006/882/home-furnishing-curtains-cushion-etc--228.jpg",
-  },
-  {
-    id: "2",
-    title: "Table Runners",
-    photoUrl:
-      "https://images.woodenstreet.de/image/data/HOMEWARDS/TABLE%20RUNNER/digital-printed-printed-blue-mughal-tree-table-runner-72-13-inch)/H-3.jpg",
-  },
-  {
-    id: "3",
-    title: "Mattress Protectors",
-    photoUrl:
-      "https://m.media-amazon.com/images/I/71-grzeNbLL._AC_UF894,1000_QL80_.jpg",
-  },
-  {
-    id: "4",
-    title: "Washing Machine Covers",
-    photoUrl:
-      "https://jdbasket.in/cdn/shop/files/high_quality_zipper_image_jpg.jpg",
-  },
-  {
-    id: "5",
-    title: "Fridge Top Covers",
-    photoUrl:
-      "https://5.imimg.com/data5/SELLER/Default/2022/11/FE/JQ/RY/125510900/waterproof-refrigerator-cover.jpg",
-  },
-  {
-    id: "6",
-    title: "Wallpapers",
-    photoUrl:
-      "https://5.imimg.com/data5/GG/KS/BN/SELLER-106630672/premium-wallpaper-roll-0-53-x-10-meters-50-sqft--500x500.jpg",
-  },
-  {
-    id: "7",
-    title: "Table Cloths",
-    photoUrl:
-      "https://m.media-amazon.com/images/I/71I9MwrXL6L._AC_UF894,1000_QL80_.jpg",
-  },
-  {
-    id: "8",
-    title: "Aprons",
-    photoUrl: "https://m.media-amazon.com/images/I/81dw36-jlnL._AC_UY1100_.jpg",
-  },
-  {
-    id: "9",
-    title: "Curtains",
-    photoUrl: "https://drapestory.in/cdn/shop/files/550_1_jpg.jpg?v=1691592956",
-  },
-  {
-    id: "10",
-    title: "Sofa Covers",
-    photoUrl:
-      "https://m.media-amazon.com/images/I/A16famgNV+L._AC_UF894,1000_QL80_.jpg",
-  },
-  {
-    id: "81",
-    title: "Chair Covers",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "91",
-    title: "Bed Mats",
-    photoUrl:
-      "https://www.bigbasket.com/media/uploads/p/l/40242945-3_1-kuber-industries-dot-design-pvc-food-matbed-server-reversible-waterproof-blue-standard.jpg",
-  },
-  {
-    id: "1d",
-    title: "Item 1",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "2s",
-    title: "Item 2",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "3a",
-    title: "Item 3",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "4s",
-    title: "Item 4",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "5s",
-    title: "Item 5",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "6d",
-    title: "Item 6",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "7w",
-    title: "Item 4",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "8s",
-    title: "Item 5",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "9a",
-    title: "Item 6",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "1s0",
-    title: "Item 4",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "81r",
-    title: "Item 5",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-  {
-    id: "91d",
-    title: "Item 6",
-    photoUrl:
-      "https://rukminim2.flixcart.com/image/850/1000/l1zc6fk0/slipcover/4/l/s/6-0-15-s4h-cc-1145-6-ohello-110-original-imagdfd6yughhprq.jpeg?q=90&crop=false",
-  },
-];
+
 export default function Index() {
   const [isEndOfListReached, setIsEndOfListReached] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -191,7 +47,7 @@ export default function Index() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    console.log(offsetY);
+  
     if (offsetY < prevScrollPos) {
       setIsEndOfListReached(false);
     }
@@ -247,11 +103,11 @@ export default function Index() {
           refreshing={refreshing}
         />
       )}
-      {isEndOfListReached && (
+      {/* {isEndOfListReached && (
         <View className="mt-4 bg-secondary w-full h-10">
           <Text className="text-lg text-center text-primary"> aaloo</Text>
         </View>
-      )}
+      )} */}
       {/* </ScrollView> */}
     </SafeAreaView>
   );
