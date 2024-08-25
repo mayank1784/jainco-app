@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DataList from "@/data/productData";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
 import { icons, images } from "@/constants";
 import CartWishlistIcons from "@/components/CartWishListIcons";

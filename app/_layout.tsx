@@ -29,11 +29,9 @@ export default function RootLayout() {
       <CartWishlistProvider>
         <CategoryProvider>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(test)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />    
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="search/[query]" options={{ headerShown: false }} /> */}
-          {/* <Stack.Screen name="+not-found" /> */}
+    
         </Stack>
         </CategoryProvider>
       </CartWishlistProvider>
