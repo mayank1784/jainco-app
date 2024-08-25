@@ -23,7 +23,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.mayank1784.jaincoapp"
     },
     "web": {
       "bundler": "metro",

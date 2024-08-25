@@ -25,18 +25,18 @@ const auth = initializeAuth(app, {
 });
 auth.useDeviceLanguage();
 // const emulatorHost = "10.0.2.2";
-const emulatorHost = "192.168.1.6";
-connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
+// const emulatorHost = "192.168.1.6";
+// connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
 // if (location.hostname === "localhost") {
 // Point to the Storage emulator running on localhost.
-connectStorageEmulator(storage, emulatorHost, 9199);
+// connectStorageEmulator(storage, emulatorHost, 9199);
 // }
 
 const db = getFirestore(app);
-connectFirestoreEmulator(db, emulatorHost, 8080);
+// connectFirestoreEmulator(db, emulatorHost, 8080);
 
 const functions = getFunctions(app);
-connectFunctionsEmulator(functions, emulatorHost, 5001);
+// connectFunctionsEmulator(functions, emulatorHost, 5001);
 
 export {
   app,
