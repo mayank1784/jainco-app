@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { Text } from "react-native";
 import { CartWishlistProvider } from "@/context/CartWishListContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CategoryProvider } from "@/context/CategoryContex";
@@ -28,11 +29,10 @@ export default function RootLayout() {
     <AuthProvider>
       <CartWishlistProvider>
         <CategoryProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />    
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-    
-        </Stack>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          </Stack>
         </CategoryProvider>
       </CartWishlistProvider>
     </AuthProvider>

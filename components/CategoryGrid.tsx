@@ -52,7 +52,7 @@ const CategoryGrid: React.FC<FlatListGridProps> = ({
           description: item.description,
           image: item.image,
         });
-        router.push( `/search/category/${item.id}`);
+        router.push(`/search/category/${item.id}`);
       }}
       style={{
         width: ITEM_SIZE,

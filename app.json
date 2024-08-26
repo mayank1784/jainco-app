@@ -50,13 +50,7 @@
       },
       "eas": {
         "projectId": "d9d08b03-2c0f-48a2-8024-98daed212e1a"
-      },
-      "firebaseApiKey": "${FIREBASE_API_KEY}",
-      "firebaseAuthDomain": "${FIREBASE_AUTH_DOMAIN}",
-      "firebaseProjectId": "${FIREBASE_PROJECT_ID}",
-      "firebaseStorageBucket": "${FIREBASE_STORAGE_BUCKET}",
-      "firebaseMessagingSenderId": "${FIREBASE_MESSAGING_SENDER_ID}",
-      "firebaseAppId": "${FIREBASE_APP_ID}"
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"

@@ -1,10 +1,4 @@
-import {
-  Image,
-  Text,
-  View,
-  Animated,
-  TouchableOpacity,
-} from "react-native";
+import { Image, Text, View, Animated, TouchableOpacity } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { icons } from "@/constants";

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from "react";
 
 // Define the shape of the category data
 interface Category {
@@ -15,7 +15,9 @@ interface CategoryContextType {
 }
 
 // Create the context with a default value
-const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
+const CategoryContext = createContext<CategoryContextType | undefined>(
+  undefined
+);
 
 // Provider component props type
 interface CategoryProviderProps {
@@ -23,12 +25,14 @@ interface CategoryProviderProps {
 }
 
 // Provider component
-export const CategoryProvider: React.FC<CategoryProviderProps> = ({ children }) => {
+export const CategoryProvider: React.FC<CategoryProviderProps> = ({
+  children,
+}) => {
   const [category, setCategory] = useState<Category>({
     id: null,
-    name: '',
-    description: '',
-    image: '',
+    name: "",
+    description: "",
+    image: "",
   });
 
   const updateCategory = (newCategory: Category) => setCategory(newCategory);
@@ -44,7 +48,7 @@ export const CategoryProvider: React.FC<CategoryProviderProps> = ({ children }) 
 export const useCategory = (): CategoryContextType => {
   const context = useContext(CategoryContext);
   if (!context) {
-    throw new Error('useCategory must be used within a CategoryProvider');
+    throw new Error("useCategory must be used within a CategoryProvider");
   }
   return context;
 };

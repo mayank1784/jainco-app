@@ -10,7 +10,13 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import React, { useContext, useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
 import { icons, images } from "@/constants";
@@ -22,15 +28,14 @@ import { ProductSmall } from "@/lib/types";
 import { useCategory } from "@/context/CategoryContex";
 
 const CategorySearchScreen = () => {
-  const {category} = useCategory()
+  const { category } = useCategory();
   // const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
-  
+
   const [isCovering, setIsCovering] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState<ProductSmall[]>([]);
-
 
   const { cart, addToCart, removeFromCart, clearCart } = useContext(
     CartContext
@@ -95,26 +100,27 @@ const CategorySearchScreen = () => {
   }, []);
 
   // For fetching List Data and loading animation
- // Fetch product data
- const fetchData = useCallback(async () => {
-  setLoading(true);
-  try {
-    const products = await fetchProductsByCategory(category.id || "");
-    setData(products);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  } finally {
-    setLoading(false);
-  }
-}, [category.id]);
+  // Fetch product data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const products = await fetchProductsByCategory(category.id || "");
+      setData(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [category.id]);
 
-
-   // Refresh the product list
-   const onRefresh = useCallback(async () => {
+  // Refresh the product list
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const refreshedProducts = await fetchProductsByCategory(category.id || "");
-   
+      const refreshedProducts = await fetchProductsByCategory(
+        category.id || ""
+      );
+
       setData(refreshedProducts);
     } catch (error) {
       console.error("Error refreshing products:", error);
@@ -185,12 +191,12 @@ const CategorySearchScreen = () => {
             <TouchableOpacity onPress={toggleCovering}>
               <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
                 <Image
-                className="flex-1 w-full h-full z-99999"
-                resizeMode="cover"
-                source={{
-                uri: category.image
-                }}
-              />
+                  className="flex-1 w-full h-full z-99999"
+                  resizeMode="cover"
+                  source={{
+                    uri: category.image,
+                  }}
+                />
 
                 <Animated.View
                   style={{

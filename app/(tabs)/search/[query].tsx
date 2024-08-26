@@ -46,8 +46,10 @@ const SearchScreen = () => {
         lowerPrice: hit.lowerPrice,
         upperPrice: hit.upperPrice,
         description: hit.description,
-        variationTypes: hit.variationTypes ? hit.variationTypes.join(', ') : null,
-        mainImage:hit.mainImage
+        variationTypes: hit.variationTypes
+          ? hit.variationTypes.join(", ")
+          : null,
+        mainImage: hit.mainImage,
       }));
       setData(extractedData);
     } catch (error) {
@@ -117,7 +119,13 @@ const SearchScreen = () => {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ProductCard item={item} category={item.category} searchTerm={query} />}
+        renderItem={({ item }) => (
+          <ProductCard
+            item={item}
+            category={item.category}
+            searchTerm={query}
+          />
+        )}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -125,14 +133,14 @@ const SearchScreen = () => {
             colors={["#dcb64a"]}
           />
         }
-        ListEmptyComponent={()=>(
+        ListEmptyComponent={() => (
           <View className="flex-1 justify-center items-center w-full h-full">
             <Text className="text-center text-black font-iregular text-lg">
-            No search results! Try again ...
+              No search results! Try again ...
             </Text>
           </View>
         )}
-        ListFooterComponent={()=>(
+        ListFooterComponent={() => (
           <View className="w-full h-auto justify-start items-center mt-2 mb-2">
             <Text className="text-base text-primary-200 font-iregular">
               That's All

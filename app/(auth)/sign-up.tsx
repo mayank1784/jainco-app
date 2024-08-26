@@ -214,7 +214,6 @@ const SignUp: React.FC = () => {
       isPincodeValid;
 
     if (isValid) {
-     
       signUp(lowerCaseForm)
         .then(() => {
           setIsSubmitting(false);
@@ -227,10 +226,11 @@ const SignUp: React.FC = () => {
         .catch((error: any) => {
           Alert.alert("Error", error.message);
           setIsSubmitting(false);
-        }).finally(()=>setIsSubmitting(false));
+        })
+        .finally(() => setIsSubmitting(false));
     } else {
       console.log("Form has validation errors. Cannot submit.");
-      setIsSubmitting(false)
+      setIsSubmitting(false);
       Alert.alert("Error", "Form has validation errors. Cannot submit.");
     }
   };

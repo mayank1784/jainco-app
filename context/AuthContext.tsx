@@ -54,38 +54,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [profileData, setProfileData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
- 
   // Firebase Auth Listener
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user?.emailVerified) {
+      if (user && user.emailVerified) {
         setCurrentUser(user);
-        // } else {
-        //   setCurrentUser(null);
-      }
-      if (currentUser != null) {
-        const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
-     
-        const profileData = profileDoc.data()
-        if (profileDoc.exists()) {
-          const profile = {
-            id: profileDoc.id,
-            ...profileData,
-          };
-          setProfileData(profile);
-        }
       } else {
+        setCurrentUser(null);
         setProfileData(null);
       }
       setLoading(false);
     });
-
     return unsubscribe;
+  }, []);
+
+  // Fetch user profile data when currentUser is set
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (currentUser) {
+        try {
+          const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (profileDoc.exists()) {
+            setProfileData({
+              id: profileDoc.id,
+              ...profileDoc.data(),
+            });
+          } else {
+            setProfileData(null);
+          }
+        } catch (error) {
+          console.error("Error fetching profile data:", error);
+        }
+      } else {
+        setProfileData(null);
+      }
+    };
+
+    fetchProfileData();
   }, [currentUser]);
 
   // Sign Up Function
   const signUp = async (form: UserForm) => {
-    let profile
+    let profile;
     try {
       const credentials = await createUserWithEmailAndPassword(
         auth,
@@ -104,15 +114,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         stateName: form.stateName,
         role: "customer",
       });
-      
+
       Alert.alert(
         "Verification email sent. Please verify your email before logging in."
       );
       router.replace("/sign-in");
     } catch (error: any) {
       console.error(error.message);
-      if (profile){
-        await profile.delete()
+      if (profile) {
+        await profile.delete();
         throw new Error("Sign up failed: " + error.message);
       }
       throw new Error(error.message);
@@ -130,7 +140,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error("Please verify your email before signing in.");
       }
       setLoading(false);
- 
     } catch (error: any) {
       throw new Error(error);
       setLoading(false);

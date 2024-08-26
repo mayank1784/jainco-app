@@ -18,7 +18,7 @@ const CartWishlistIcons: React.FC = () => {
   return (
     <View className="flex flex-row justify-between items-center">
       <View className="relative">
-        <TouchableOpacity onPress={() => router.push("/productPage")}>
+        <TouchableOpacity onPress={() => router.push("/cart")}>
           <Image
             source={icons.cart}
             className="w-8 h-8"

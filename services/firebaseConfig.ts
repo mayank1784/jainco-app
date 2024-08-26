@@ -1,9 +1,3 @@
-import Constants from "expo-constants";
-
-// Assert the type of Constants.expoConfig and its properties
-const expoConfig = Constants.expoConfig as { extra?: Record<string, any> };
-const extra = expoConfig.extra || {};
-
 // Extract configuration values with default fallbacks
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,

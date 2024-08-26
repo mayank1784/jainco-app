@@ -198,7 +198,6 @@ const ProductPage: React.FC = () => {
 
     // Update the price state based on the selected variation
     if (selectedVariation) {
- 
       setPrice(selectedVariation.price);
       if (selectedVariation.images && selectedVariation.images.length > 0) {
         updatedImages = [...(selectedVariation.images || []), ...updatedImages];

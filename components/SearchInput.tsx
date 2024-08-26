@@ -32,9 +32,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ initialQuery }) => {
         onSubmitEditing={handleSearch} // Handle search on keyboard "Enter"
         returnKeyType="search"
       />
-      <TouchableOpacity
-        onPress={handleSearch}
-      >
+      <TouchableOpacity onPress={handleSearch}>
         <Image source={icons.search} className="w-5 h-5" resizeMode="contain" />
       </TouchableOpacity>
     </View>

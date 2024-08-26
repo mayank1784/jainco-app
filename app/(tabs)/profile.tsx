@@ -56,65 +56,64 @@ const Profile: React.FC<ProfileProps> = ({ product }) => {
     <SafeAreaView className="flex-1 bg-zinc-150 w-full justify-center items-center m-0 p-0">
       <ScrollView>
         <View className="px-2">
-          {(currentUser && profileData) ? (
+          {currentUser && profileData ? (
             <View className="w-full h-auto flex flex-row justify-between items-center mt-6 mb-4 overflow-hidden">
-            <View className="flex flex-row justify-start gap-4 ">
-              <View className="border min-w-max p-3 min-h-max  bg-secondary items-center justify-center rounded-full">
-                <Text className="text-black font-lbold text-2xl uppercase">
-                  {profileData?.name
-                    .split(" ")
-                    .map((word: string) => word[0])
-                    .join(".")}
-                </Text>
+              <View className="flex flex-row justify-start gap-4 ">
+                <View className="border min-w-max p-3 min-h-max  bg-secondary items-center justify-center rounded-full">
+                  <Text className="text-black font-lbold text-2xl uppercase">
+                    {profileData?.name
+                      .split(" ")
+                      .map((word: string) => word[0])
+                      .join(".")}
+                  </Text>
+                </View>
+                <View className="w-max h-max flex flex-col justify-center">
+                  <Text className="font-rregular text-primary-300">
+                    Welcome,
+                  </Text>
+                  <Text className="uppercase font-rregular text-primary-300">
+                    {profileData?.name}
+                  </Text>
+                  <Text className="uppercase font-rregular text-primary-300">
+                    (GSTIN: {profileData?.gstin})
+                  </Text>
+                </View>
               </View>
-              <View className="w-max h-max flex flex-col justify-center">
-                <Text className="font-rregular text-primary-300">Welcome,</Text>
-                <Text className="uppercase font-rregular text-primary-300">
-                  {profileData?.name}
-                </Text>
-                <Text className="uppercase font-rregular text-primary-300">
-                 (GSTIN: {profileData?.gstin})
-                </Text>
+              <View className="w-8 h-8 flex flex-col">
+                <TouchableOpacity
+                  onPress={async () => {
+                    await signOut();
+                  }}
+                  disabled={loading}
+                >
+                  <Image
+                    source={icons.logout}
+                    resizeMode="contain"
+                    className="w-full h-full"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
-            <View className="w-8 h-8 flex flex-col">
-              <TouchableOpacity
-                onPress={async () => {
-                  await signOut();
-                }}
-                disabled={loading}
-              >
-                <Image
-                  source={icons.logout}
-                  resizeMode="contain"
-                  className="w-full h-full"
-                />
-              </TouchableOpacity>
-            </View>
-            </View>
-            
           ) : (
             <>
-            <CustomButton
-            title="Sign In"
-            handlePress={() => {
-              router.push("/sign-in");
-            }}
-            containerStyles="mt-4 mb-3 w-full"
-          />
-            <CustomButton
-            title="Sign Up"
-            handlePress={() => {
-              router.push("/sign-up");
-            }}
-            containerStyles="mt-4 mb-5 w-full"
-          />
-          </>
+              <CustomButton
+                title="Sign In"
+                handlePress={() => {
+                  router.push("/sign-in");
+                }}
+                containerStyles="mt-4 mb-3 w-full"
+              />
+              <CustomButton
+                title="Sign Up"
+                handlePress={() => {
+                  router.push("/sign-up");
+                }}
+                containerStyles="mt-4 mb-5 w-full"
+              />
+            </>
           )}
-          
         </View>
 
-      
         <View className="flex-1 flex-col gap-1 rounded-md bg-white m-2">
           <Text className="text-lg pl-2 font-iregular">Contact Us:</Text>
           <TouchableOpacity
@@ -158,7 +157,10 @@ const Profile: React.FC<ProfileProps> = ({ product }) => {
           <Text className="text-lg text-black pl-2 font-iregular">
             Visit Us:{" "}
           </Text>
-          <Text className="text-sm font-rregular pl-2 pr-2">Jain Enterprises, 2949-B/41, Beadon Pura, Karol Bagh, New Delhi - 110005</Text>
+          <Text className="text-sm font-rregular pl-2 pr-2">
+            Jain Enterprises, 2949-B/41, Beadon Pura, Karol Bagh, New Delhi -
+            110005
+          </Text>
         </View>
         {/* WebView Map Section */}
         <View className="m-2 w-auto h-auto border border-secondary rounded-lg overflow-hidden">
@@ -192,7 +194,6 @@ const Profile: React.FC<ProfileProps> = ({ product }) => {
             className="w-full h-48"
           />
         </View>
-       
       </ScrollView>
     </SafeAreaView>
   );

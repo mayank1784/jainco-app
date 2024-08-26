@@ -7,7 +7,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "@/constants";
@@ -47,7 +47,7 @@ export default function Index() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-  
+
     if (offsetY < prevScrollPos) {
       setIsEndOfListReached(false);
     }
@@ -78,7 +78,9 @@ export default function Index() {
           />
         </View>
         <View className="flex flex-col justify-center items-center overflow-hidden">
-          <Text className="text-black font-lbold text-[28px]">JAINCO DECOR</Text>
+          <Text className="text-black font-lbold text-[28px]">
+            JAINCO DECOR
+          </Text>
           <Text className="text-[16px] text-black font-rregular mt-0 pt-0 ">
             Decor your Dream Home
           </Text>
