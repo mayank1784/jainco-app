@@ -1,5 +1,7 @@
 import { icons } from "@/constants";
 import React, { useState, useEffect, useContext, useCallback } from "react";
+import { useMemo } from 'react';
+
 import HTMLView from "react-native-htmlview";
 import { useWindowDimensions } from "react-native";
 import { useLocalSearchParams } from "expo-router";
@@ -32,6 +34,26 @@ import { findUnavailableCombinations } from "@/lib/utilityFunctions";
 
 const { width: viewportWidth } = Dimensions.get("window");
 
+// const saveDataToLocalServer = async (data: any) => {
+//   try {
+//     const response = await fetch("http://192.168.1.6:4389/save-data", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(data),
+//     });
+
+//     if (response.ok) {
+//       console.log("Data saved successfully!");
+//     } else {
+//       console.error("Failed to save data");
+//     }
+//   } catch (error) {
+//     console.error("Error:", error);
+//   }
+// };
+
 const ProductPage: React.FC = () => {
   const { productId } = useLocalSearchParams<{ productId: string }>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -55,6 +77,25 @@ const ProductPage: React.FC = () => {
     addToCart: () => {},
     clearCart: () => {},
   };
+
+
+  // useEffect(() => {
+  //   const save = async (data: any) => {
+  //     await saveDataToLocalServer(data);
+  //   };
+  //   if (unavailableComb.length > 0) {
+  //     save(unavailableComb);
+  //   }
+  // }, [unavailableComb]);
+
+  // useEffect(() => {
+  //   const save = async (data: any) => {
+  //     await saveDataToLocalServer(data);
+  //   };
+  //   if (variations && variations.length > 0) {
+  //     save(variations);
+  //   }
+  // }, [variations]);
 
   useEffect(() => {
     let unsubscribeProduct: (() => void) | undefined;
@@ -111,14 +152,16 @@ const ProductPage: React.FC = () => {
       ];
       setImages(loadedImages);
       setProductName(demoProduct.name);
+    }
+  }, [demoProduct]);
 
-      if (variations) {
-        const unava = findUnavailableCombinations(
-          demoProduct.variationTypes ?? {},
-          variations
-        );
-        setUnavailableComb(unava);
-      }
+  useEffect(() => {
+    if (demoProduct && variations) {
+      const unava = findUnavailableCombinations(
+        demoProduct.variationTypes ?? {},
+        variations
+      );
+      setUnavailableComb(unava);
     }
   }, [demoProduct, variations]);
 
@@ -201,8 +244,10 @@ const ProductPage: React.FC = () => {
       setPrice(selectedVariation.price);
       if (selectedVariation.images && selectedVariation.images.length > 0) {
         updatedImages = [...(selectedVariation.images || []), ...updatedImages];
-        setImages(updatedImages.filter(Boolean) as string[]);
+     
       }
+     
+      setImages(updatedImages.filter(Boolean) as string[]);
     } else {
       setPrice(null); // No matching variation found
     }
@@ -285,6 +330,83 @@ const ProductPage: React.FC = () => {
     return;
   };
 
+
+  const getFirstValidCombination = (
+    initialSelection: VariationType,
+    fixedAttributeName: string,
+    fixedValue: string,
+  ): VariationType => {
+    let currentSelection = { ...initialSelection, [fixedAttributeName]: fixedValue };
+  
+    const attributes = Object.keys(demoProduct?.variationTypes ?? {});
+    const attributeValues: { [key: string]: string[] } = attributes.reduce((acc, attrName) => {
+      acc[attrName] = demoProduct?.variationTypes?.[attrName] ?? []
+      return acc;
+    }, {} as { [key: string]: string[] });
+  
+    const generateCombinations = (currentSelection: VariationType, attributesLeft: string[]): VariationType[] => {
+      if (attributesLeft.length === 0) {
+        return [currentSelection];
+      }
+  
+      const attributeName = attributesLeft[0];
+      const values = attributeValues[attributeName];
+      const combinations = [];
+  
+      for (const value of values) {
+        const newSelection = { ...currentSelection, [attributeName]: value };
+        combinations.push(...generateCombinations(newSelection, attributesLeft.slice(1)));
+      }
+  
+      return combinations;
+    };
+  
+    const allCombinations = generateCombinations(currentSelection, attributes.filter(attrName => attrName !== fixedAttributeName));
+  
+    for (const combination of allCombinations) {
+      if (!isCombinationUnavailable(combination, unavailableComb)) {
+        return combination;
+      }
+    }
+  
+    return currentSelection;
+  };
+
+  const firstAttributeHandleAttributeSelection = (attributeName:string, value:string) => {
+    const newSelection = { ...selectedAttributes, [attributeName]: value };
+   
+    const validCombination = getFirstValidCombination(newSelection,attributeName, value);
+
+    setSelectedAttributes(validCombination || newSelection);
+  };
+
+
+ 
+
+const noOfUnavaiCombForAttrValue = useCallback((attributeName:string, attributeValue:string) => {
+  return unavailableComb.filter((combination) => {
+    return combination.combination[attributeName] === attributeValue;
+  }).length;
+}, [unavailableComb]);
+
+const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
+  return (attributeName: string) => {
+    if (!demoProduct?.variationTypes) return 0;
+
+    const attributeCounts = Object.entries(demoProduct.variationTypes)
+      .filter(([key]) => key !== attributeName) // Exclude the specified attribute
+      .map(([, values]) => values.length); // Get the length of each attribute's values
+
+    return attributeCounts.reduce((acc, count) => acc * count, 1); // Calculate the total combinations
+  };
+}, [demoProduct?.variationTypes]);
+
+const areAllCombinationsUnavailable = useCallback((attributeName:string, attributeValue:string) => {
+  const a = getNoOfTotalPossibleCombForAttrValue(attributeName)
+  const b = noOfUnavaiCombForAttrValue(attributeName, attributeValue)
+  return a===b
+}, [unavailableComb, demoProduct?.variationTypes]);
+
   const { width } = useWindowDimensions();
 
   return (
@@ -364,7 +486,7 @@ const ProductPage: React.FC = () => {
               // Use optional chaining to safely access variationTypes and its properties
               Object.keys(demoProduct.variationTypes ?? {}).length > 0 ? (
                 Object.keys(demoProduct.variationTypes ?? {}).map(
-                  (attributeName) => (
+                  (attributeName,idx) => (
                     <View key={attributeName} className="mt-4">
                       <Text className="text-primary-400 capitalize font-iregular">
                         {attributeName}
@@ -382,6 +504,39 @@ const ProductPage: React.FC = () => {
                               );
                               const isSelected =
                                 selectedAttributes[attributeName] === value;
+
+                                if(idx===0){
+
+                                  const isDisabled=areAllCombinationsUnavailable(attributeName,value)
+
+                                  return(
+                                    <TouchableOpacity
+                                    key={index}
+                                    onPress={() =>
+                                      !isDisabled &&
+                                      firstAttributeHandleAttributeSelection(
+                                        attributeName,
+                                        value
+                                      )
+                                    }
+                                    className={`rounded-md py-2 mr-2 mb-2 px-4 ${
+                                      isSelected
+                                        ? "bg-secondary text-black"
+                                        : isDisabled
+                                        ? "border-dotted border border-red-500"
+                                        : "border border-primary-200"
+                                    }`}
+                                   disabled={isDisabled}
+                                  >
+                                    <Text
+                                      className={`font-rregular capitalize ${isDisabled && "text-primary-100"}`}
+                                    >
+                                      {value}
+                                    </Text>
+                                  </TouchableOpacity>
+                                  )
+                                }
+
                               return (
                                 <TouchableOpacity
                                   key={index}

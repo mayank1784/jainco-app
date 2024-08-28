@@ -8,52 +8,59 @@ function cartesianProduct(arrays: string[][]): string[][] {
   );
 }
 
-// Function to find all unavailable variations of a product
+
+// Utility function to sort object keys and convert to a string
+function stringifyVariationType(variationType: Record<string, string>): string {
+  const sortedKeys = Object.keys(variationType).sort();
+  const sortedObj = sortedKeys.reduce((obj, key) => {
+    obj[key] = variationType[key];
+    return obj;
+  }, {} as Record<string, string>);
+  return JSON.stringify(sortedObj);
+}
+
+// Main function to find unavailable combinations
 export const findUnavailableCombinations = (
   variationTypes: VariationTypes,
-  variations: Variation[]
-): { combination: VariationType; reason: string }[] => {
+  variations:Variation[]
+): { combination: Record<string, string>; reason: string }[] => {
   const keys = Object.keys(variationTypes);
-  const allCombinations = cartesianProduct(
-    keys.map((key) => variationTypes[key])
-  );
+  const values = keys.map(key => variationTypes[key]);
 
-  const availableCombinations = variations.reduce((set, variation) => {
-    set.add(JSON.stringify(variation.variationType));
-    return set;
-  }, new Set<string>());
-
-  const unavailableCombinations: {
-    combination: VariationType;
-    reason: string;
-  }[] = [];
-
-  for (const combination of allCombinations) {
-    const combinationObj = keys.reduce((obj, key, index) => {
+  // Generate all possible combinations
+  const allCombinations = cartesianProduct(values).map(combination => 
+    keys.reduce((obj, key, index) => {
       obj[key] = combination[index];
       return obj;
-    }, {} as VariationType);
+    }, {} as Record<string, string>)
+  );
 
-    const combinationStr = JSON.stringify(combinationObj);
+  // Create a map of available variations for quick lookup
+  const availableCombinationsMap = new Map<string, { isAvailable: boolean; stock: number }>(
+    variations.map(v => [stringifyVariationType(v.variationType), { isAvailable: v.isAvailable, stock: v.stock }])
+  );
 
-    // Check if the combination is missing or is available = false
-    const variation = variations.find(
-      (v) => JSON.stringify(v.variationType) === combinationStr
-    );
+  // Initialize the array for storing unavailable combinations
+  const unavailableCombinations: { combination: Record<string, string>; reason: string }[] = [];
 
-    if (!variation) {
+  // Check all possible combinations
+  for (const combination of allCombinations) {
+    const combinationStr = stringifyVariationType(combination);
+    const available = availableCombinationsMap.get(combinationStr);
+
+    if (!available) {
       unavailableCombinations.push({
-        combination: combinationObj,
+        combination,
         reason: "Missing",
       });
-    } else if (!variation.isAvailable) {
+    } else if (!available.isAvailable) {
       unavailableCombinations.push({
-        combination: combinationObj,
+        combination,
         reason: "Unavailable",
       });
-    } else if (variation.stock <= 0) {
+    } else if (available.stock <= 0) {
       unavailableCombinations.push({
-        combination: combinationObj,
+        combination,
         reason: "Out of stock",
       });
     }
