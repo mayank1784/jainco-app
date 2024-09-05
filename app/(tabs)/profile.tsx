@@ -74,9 +74,14 @@ const Profile: React.FC<ProfileProps> = ({ product }) => {
                   <Text className="uppercase font-rregular text-primary-300">
                     {profileData?.name}
                   </Text>
-                  <Text className="uppercase font-rregular text-primary-300">
+                  {profileData.gstin ? (
+                    <Text className="uppercase font-rregular text-primary-300">
                     (GSTIN: {profileData?.gstin})
                   </Text>
+                  ) : ( <Text className="uppercase font-rregular text-primary-300">
+                    (AADHAR: {profileData?.aadhar})
+                  </Text>)}
+                  
                 </View>
               </View>
               <View className="w-8 h-8 flex flex-col">

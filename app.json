@@ -13,7 +13,8 @@
       "backgroundColor": "#F4F4F5"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mayank1784.jaincoapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +25,8 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.mayank1784.jaincoapp"
+      "package": "com.mayank1784.jaincoapp",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",

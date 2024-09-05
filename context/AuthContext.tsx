@@ -29,7 +29,8 @@ interface UserForm {
   name: string;
   email: string;
   password: string;
-  gstin: string;
+  gstin?: string;
+  aadhar?:string;
   pincode: string;
   districtName: string;
   stateName: string;
@@ -70,8 +71,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   // Fetch user profile data when currentUser is set
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (currentUser) {
+    if (currentUser) {
+      const fetchProfileData = async () => {
         try {
           const profileDoc = await getDoc(doc(db, "users", currentUser.uid));
           if (profileDoc.exists()) {
@@ -85,12 +86,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         } catch (error) {
           console.error("Error fetching profile data:", error);
         }
-      } else {
-        setProfileData(null);
-      }
-    };
+      };
 
-    fetchProfileData();
+      fetchProfileData();
+    }
   }, [currentUser]);
 
   // Sign Up Function
@@ -103,12 +102,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         form.password
       );
       profile = credentials.user;
+      let gstinAadhar = {}
+      if (form.gstin){
+        gstinAadhar = {gstin: form.gstin}
+      }else if (form.aadhar){
+        gstinAadhar = {aadhar: form.aadhar}
+      }
       // Send verification email
       await sendEmailVerification(profile);
       await setDoc(doc(db, "users", profile.uid), {
         name: form.name,
         email: form.email,
-        gstin: form.gstin,
+        ...gstinAadhar,
         pincode: form.pincode,
         districtName: form.districtName,
         stateName: form.stateName,
@@ -118,7 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       Alert.alert(
         "Verification email sent. Please verify your email before logging in."
       );
-      router.replace("/sign-in");
+      // router.replace("/sign-in");
     } catch (error: any) {
       console.error(error.message);
       if (profile) {
@@ -142,7 +147,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setLoading(false);
     } catch (error: any) {
       throw new Error(error);
-      setLoading(false);
+      
+    }finally{
+      setLoading(false)
     }
   };
 

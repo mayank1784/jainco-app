@@ -16,6 +16,8 @@ import CategoryGrid from "@/components/CategoryGrid";
 
 import { fetchCategories } from "@/services/firebaseFunctions";
 import { Category } from "@/lib/types";
+import { loadCategoriesFromCache, saveCategoriesToCache } from "@/lib/cacheUtils";
+
 
 export default function Index() {
   const [isEndOfListReached, setIsEndOfListReached] = useState(false);
@@ -32,8 +34,14 @@ export default function Index() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      let cachedCategories = await loadCategoriesFromCache();
+   
+      if (cachedCategories.length > 0) {
+        setCategories(cachedCategories);
+      }else{
       const data = await fetchCategories();
-      setCategories(data);
+      await saveCategoriesToCache(data)
+      setCategories(data);}
     } catch (error) {
       console.error("Error fetching categories:", error);
     } finally {
@@ -57,7 +65,9 @@ export default function Index() {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await fetchData();
+      const categories = await fetchCategories()
+      await saveCategoriesToCache(categories)
+      setCategories(categories)
     } catch (error) {
       console.error("Error refreshing categories:", error);
     } finally {
@@ -102,6 +112,7 @@ export default function Index() {
           onEndReachedThreshold={0.1}
           onEndReached={handleEndReached}
           onRefresh={handleRefresh}
+          
           refreshing={refreshing}
         />
       )}

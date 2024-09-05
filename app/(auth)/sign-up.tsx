@@ -6,6 +6,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,12 +15,14 @@ import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
 import { Link, router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
+import { Picker } from "@react-native-picker/picker"; 
 
 interface SignUpForm {
   name: string;
   email: string;
   password: string;
-  gstin: string;
+  gstin?: string;
+  aadhar?: string;
   pincode: string;
   districtName: string;
   stateName: string;
@@ -29,7 +32,8 @@ interface Errors {
   name: string;
   email: string;
   password: string;
-  gstin: string;
+  gstin?: string;
+  aadhar?: string;
   pincode: string;
 }
 
@@ -41,6 +45,7 @@ const SignUp: React.FC = () => {
     email: "",
     password: "",
     gstin: "",
+    aadhar: "",
     pincode: "",
     districtName: "",
     stateName: "",
@@ -50,10 +55,12 @@ const SignUp: React.FC = () => {
     email: "",
     password: "",
     gstin: "",
+    aadhar: "",
     pincode: "",
   });
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [hasGSTIN, setHasGSTIN] = useState<string>("yes"); // Dropdown value for GSTIN or Aadhar
 
   const nameRegex = /^[a-zA-Z ]{2,30}$/;
   const gstinRegex =
@@ -62,6 +69,8 @@ const SignUp: React.FC = () => {
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   const passRegex =
     /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+
+   const aadharRegex =  /^[2-9][0-9]{3}\s[0-9]{4}\s[0-9]{4}$/;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -111,6 +120,25 @@ const SignUp: React.FC = () => {
       return false;
     }
     setErrors((prevState) => ({ ...prevState, password: "" }));
+    return true;
+  };
+
+  const validateAadhar = (value: string): boolean => {
+    if (!value.trim()) {
+      setErrors((prevState) => ({
+        ...prevState,
+        aadhar: "Password is required",
+      }));
+      return false;
+    } else if (!aadharRegex.test(value)) {
+      setErrors((prevState) => ({
+        ...prevState,
+        aadhar:
+          "Aadhar number should be of 12 digits of 4 digit block",
+      }));
+      return false;
+    }
+    setErrors((prevState) => ({ ...prevState, aadhar: "" }));
     return true;
   };
 
@@ -190,36 +218,46 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const lowerCaseForm = {
+    const lForm = {
       name: form.name.toLowerCase(),
       email: form.email.toLowerCase(),
       password: form.password,
-      gstin: form.gstin.toUpperCase(), // Keep GSTIN in uppercase as per usual format
+      // gstin: form.gstin.toUpperCase(), // Keep GSTIN in uppercase as per usual format
       pincode: form.pincode.toLowerCase(), // Pincode should remain as numbers
       districtName: form.districtName.toLowerCase(),
       stateName: form.stateName.toLowerCase(),
     };
 
-    const isNameValid = validateName(lowerCaseForm.name);
-    const isEmailValid = validateEmail(lowerCaseForm.email);
-    const isPasswordValid = validatePassword(lowerCaseForm.password);
-    const isGSTINValid = validateGSTIN(lowerCaseForm.gstin);
-    const isPincodeValid = await validatePincode(lowerCaseForm.pincode);
+    const isNameValid = validateName(lForm.name);
+    const isEmailValid = validateEmail(lForm.email);
+    const isPasswordValid = validatePassword(lForm.password);
+    let isGSTINOrAadharValid = true;
+    if (hasGSTIN === "yes") {
+      isGSTINOrAadharValid = validateGSTIN(form.gstin!);
+    } else {
+      isGSTINOrAadharValid = validateAadhar(form.aadhar!);
+    }
+    const isPincodeValid = await validatePincode(lForm.pincode);
 
     const isValid =
       isNameValid &&
       isEmailValid &&
       isPasswordValid &&
-      isGSTINValid &&
+      isGSTINOrAadharValid &&
       isPincodeValid;
 
     if (isValid) {
+      const lowerCaseForm = {
+        ...form,
+        gstin: form.gstin?.toUpperCase(),
+        aadhar: form.aadhar,
+      };
       signUp(lowerCaseForm)
         .then(() => {
           setIsSubmitting(false);
         })
         .then(() => {
-          Alert.alert("Success", "Form submitted successfully!");
+          // Alert.alert("Success", "Form submitted successfully!");
           // console.log("Form submitted successfully:", lowerCaseForm);
           router.replace("/sign-in");
         })
@@ -237,7 +275,10 @@ const SignUp: React.FC = () => {
 
   return (
     <SafeAreaView className="bg-zinc-150 h-full">
+    
       <ScrollView>
+      
+         
         <View className="w-full justify-center min-h-[83vh] my-2 px-4">
           <View className="flex-row justify-start items-center gap-x-4">
             <Image
@@ -287,7 +328,48 @@ const SignUp: React.FC = () => {
           {errors.password ? (
             <Text style={{ color: "red" }}>{errors.password}</Text>
           ) : null}
-          <FormField
+          
+          {/* Dropdown for selecting GSTIN or Aadhar */}
+          <View className="mt-4">
+            <Text className="text-lg text-primary-200">Do you have a GSTIN?</Text>
+            <Picker 
+            selectedValue={hasGSTIN}
+              onValueChange={(value) => setHasGSTIN(value)}
+              mode="dropdown"
+            >
+              <Picker.Item label="Yes" value="yes" />
+              <Picker.Item label="No" value="no" />
+            </Picker>
+          </View>
+
+          {/* Conditionally show GSTIN or Aadhar */}
+          {hasGSTIN === "yes" ? (
+            <FormField
+              title="* GSTIN"
+              value={form.gstin || ''}
+              handleChangeText={(e) => handleChange("gstin", e, validateGSTIN)}
+              otherStyles="mt-4"
+              placeholder="07AZYPK0127D1ZE"
+            />
+          ) : (
+            <FormField
+              title="* Aadhar"
+              value={form.aadhar || ''}
+              handleChangeText={(e) => handleChange("aadhar", e, validateAadhar)}
+              otherStyles="mt-4"
+              placeholder="1234 5678 9012"
+              keyboardType="number-pad"
+            />
+          )}
+          {hasGSTIN === "yes" && errors.gstin ? (
+            <Text style={{ color: "red" }}>{errors.gstin}</Text>
+          ) : null}
+          {hasGSTIN === "no" && errors.aadhar ? (
+            <Text style={{ color: "red" }}>{errors.aadhar}</Text>
+          ) : null}
+
+
+          {/* <FormField
             title="* GSTIN"
             value={form.gstin}
             handleChangeText={(e) => {
@@ -299,7 +381,7 @@ const SignUp: React.FC = () => {
           />
           {errors.gstin ? (
             <Text style={{ color: "red" }}>{errors.gstin}</Text>
-          ) : null}
+          ) : null} */}
           <FormField
             title="* Pincode"
             value={form.pincode}
@@ -355,8 +437,11 @@ const SignUp: React.FC = () => {
               Sign In
             </Link>
           </View>
+         
         </View>
+ 
       </ScrollView>
+    
     </SafeAreaView>
   );
 };

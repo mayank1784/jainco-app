@@ -25,7 +25,7 @@ const auth = initializeAuth(app, {
 
 auth.useDeviceLanguage();
 // const emulatorHost = "10.0.2.2";
-// const emulatorHost = "192.168.1.6";
+const emulatorHost = "192.168.1.6";
 // connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
 // if (location.hostname === "localhost") {
 // Point to the Storage emulator running on localhost.

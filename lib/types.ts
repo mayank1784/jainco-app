@@ -79,6 +79,7 @@ export interface CartItemWithVariations {
   price: number;
   productMainImage: string;
   variationImage: string;
+  amount: number;
 }
 
 export interface CartItemWithoutVariations {
@@ -87,6 +88,7 @@ export interface CartItemWithoutVariations {
   productId: string;
   price: number;
   productMainImage: string;
+  amount: number;
 }
 
 export type CartItem = CartItemWithVariations | CartItemWithoutVariations;

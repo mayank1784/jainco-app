@@ -1,14 +1,17 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Product } from "@/lib/types";
+import * as FileSystem from 'expo-file-system'
+import { CartItemWithVariations, Product } from "@/lib/types";
 import { Alert } from "react-native";
 import { CartItem } from "@/lib/types";
+
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: CartItem) => void;
-  removeFromCart: (productId: string) => void;
+  removeFromCart: (productId: string, variationId?:string) => void;
   clearCart: () => void;
+  updateCartItemQuantity: (productId: string, newQuantity: number, variationId?: string) => void;
 }
 
 interface WishlistContextType {
@@ -27,6 +30,8 @@ export const WishlistContext = createContext<WishlistContextType | undefined>(
 );
 const CART_STORAGE_KEY = "cart";
 const WISHLIST_STORAGE_KEY = "wishlist";
+const CART_FILE_NAME = "cart.json";
+const WISHLIST_FILE_NAME = "wishlist.json"
 
 export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -34,50 +39,120 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
 
-  // Load cart and wishlist from AsyncStorage on component mount
+
+  // // Load cart and wishlist from AsyncStorage on component mount
+  // useEffect(() => {
+  //   const loadCartAndWishlist =  () => {
+  //     try {
+  //       const storedCart =  storage.contains(CART_STORAGE_KEY);
+  //       const storedWishlist = storage.contains(WISHLIST_STORAGE_KEY);
+  //       if (storedCart){
+  //         const cartItems = storage.getString(CART_STORAGE_KEY)
+  //         cartItems && setCart(JSON.parse(cartItems));}
+  //       if (storedWishlist){
+  //         const wishItems = storage.getString(WISHLIST_STORAGE_KEY)
+  //         wishItems && setWishlist(JSON.parse(wishItems));}
+  //     } catch (error) {
+  //       console.error("Failed to load cart and wishlist from storage", error);
+  //     }
+  //   };
+
+  //   loadCartAndWishlist();
+  // }, []);
+
   useEffect(() => {
     const loadCartAndWishlist = async () => {
       try {
-        const storedCart = await AsyncStorage.getItem(CART_STORAGE_KEY);
-        const storedWishlist = await AsyncStorage.getItem(WISHLIST_STORAGE_KEY);
-        if (storedCart) setCart(JSON.parse(storedCart));
-        if (storedWishlist) setWishlist(JSON.parse(storedWishlist));
+        const cartFileUri = `${FileSystem.documentDirectory}${CART_FILE_NAME}`;
+        const wishlistFileUri = `${FileSystem.documentDirectory}${WISHLIST_FILE_NAME}`;
+  
+        // Check if files exist, and create new files if not
+        const [cartFileInfo, wishlistFileInfo] = await Promise.all([
+          FileSystem.getInfoAsync(cartFileUri),
+          FileSystem.getInfoAsync(wishlistFileUri),
+        ]);
+  
+        if (!cartFileInfo.exists) {
+          await FileSystem.writeAsStringAsync(cartFileUri, '[]');
+        }
+  
+        if (!wishlistFileInfo.exists) {
+          await FileSystem.writeAsStringAsync(wishlistFileUri, '[]');
+        }
+  
+        // Load cart and wishlist from files
+        const [cartFile, wishlistFile] = await Promise.all([
+          FileSystem.readAsStringAsync(cartFileUri),
+          FileSystem.readAsStringAsync(wishlistFileUri),
+        ]);
+  
+        setCart(JSON.parse(cartFile));
+        setWishlist(JSON.parse(wishlistFile));
       } catch (error) {
-        console.error("Failed to load cart and wishlist from storage", error);
+        console.error("Failed to load cart and wishlist from file system", error);
       }
     };
-
+  
     loadCartAndWishlist();
   }, []);
 
-  // Save cart to AsyncStorage whenever it changes
-  useEffect(() => {
-    const saveCart = async () => {
-      try {
-        await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      } catch (error) {
-        console.error("Failed to save cart to storage", error);
-      }
-    };
+  // // Save cart to AsyncStorage whenever it changes
+  // useEffect(() => {
+  //   const saveCart = () => {
+  //     try {
+  //       storage.set(CART_STORAGE_KEY, JSON.stringify(cart));
+  //     } catch (error) {
+  //       console.error("Failed to save cart to storage", error);
+  //     }
+  //   };
 
-    saveCart();
-  }, [cart]);
+  //   saveCart();
+  // }, [cart]);
 
-  // Save wishlist to AsyncStorage whenever it changes
-  useEffect(() => {
-    const saveWishlist = async () => {
-      try {
-        await AsyncStorage.setItem(
-          WISHLIST_STORAGE_KEY,
-          JSON.stringify(wishlist)
-        );
-      } catch (error) {
-        console.error("Failed to save wishlist to storage", error);
-      }
-    };
+  // // Save wishlist to AsyncStorage whenever it changes
+  // useEffect(() => {
+  //   const saveWishlist =  () => {
+  //     try {
+  //        storage.set(
+  //         WISHLIST_STORAGE_KEY,
+  //         JSON.stringify(wishlist)
+  //       );
+  //     } catch (error) {
+  //       console.error("Failed to save wishlist to storage", error);
+  //     }
+  //   };
 
-    saveWishlist();
-  }, [wishlist]);
+  //   saveWishlist();
+  // }, [wishlist]);
+
+// Save cart to file system whenever it changes
+ useEffect(() => {
+      const saveCart = async () => {
+        try {
+          const cartFileUri = `${FileSystem.documentDirectory}${CART_FILE_NAME}`;
+          await FileSystem.writeAsStringAsync(cartFileUri, JSON.stringify(cart));
+        } catch (error) {
+          console.error("Failed to save cart to file system", error);
+        }
+      };
+  
+      saveCart();
+    }, [cart]);
+  
+    // Save wishlist to file system whenever it changes
+    useEffect(() => {
+      const saveWishlist = async () => {
+        try {
+          const wishlistFileUri = `${FileSystem.documentDirectory}${WISHLIST_FILE_NAME}`;
+          await FileSystem.writeAsStringAsync(wishlistFileUri, JSON.stringify(wishlist));
+        } catch (error) {
+          console.error("Failed to save wishlist to file system", error);
+        }
+      };
+  
+      saveWishlist();
+    }, [wishlist]);
+
 
   const addToCart = (product: CartItem) => {
     // Check if the product already exists in the cart
@@ -114,26 +189,50 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const removeFromCart = (productId: string, variationId?: string) => {
-    setCart((prevCart) =>
-      prevCart.filter((item) => {
-        // Check if productId matches
-        if (item.productId !== productId) {
-          return true; // Keep item if productId does not match
-        }
-
-        // Check if variationId is provided
-        if (variationId !== undefined) {
-          // Check if item has variationId and it matches
-          return "variationId" in item
-            ? item.variationId !== variationId
-            : true;
-        }
-
-        // If no variationId is provided, ensure item does not have variationId
-        return !("variationId" in item);
-      })
-    );
+    const updatedCart = cart.filter((item) => {
+      // Case 1: Both productId and variationId are passed
+      if (variationId) {
+        // Return true if the item does not match both productId and variationId
+        return !(
+          item.productId === productId && 
+          (item as CartItemWithVariations).variationId === variationId
+        );
+      } 
+      // Case 2: Only productId is passed
+      else {
+        // Return true if the item does not match the productId
+        return item.productId !== productId;
+      }
+    });
+  
+    setCart(updatedCart);
   };
+  
+  const updateCartItemQuantity = (productId: string, newQuantity: number, variationId?: string) => {
+    const updatedCart = cart.map((item) => {
+      // Case 1: Both productId and variationId are passed
+      if (variationId) {
+        if (
+          item.productId === productId && 
+          (item as CartItemWithVariations).variationId === variationId
+        ) {
+          // Update the quantity for the matching item
+          return { ...item, qty: newQuantity, amount: newQuantity * item.price };
+        }
+      } 
+      // Case 2: Only productId is passed
+      else {
+        if (item.productId === productId) {
+          // Update the quantity for the matching item
+          return { ...item, qty: newQuantity, amount: newQuantity * item.price };
+        }
+      }
+      return item; // Return the item unchanged if it doesn't match
+    });
+  
+    setCart(updatedCart);
+  };
+  
 
   const addToWishlist = (product: Product) => {
     setWishlist((prevWishlist) => [...prevWishlist, product]);
@@ -148,7 +247,8 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   const clearCart = async () => {
     // Add clearCart function
     try {
-      await AsyncStorage.removeItem(CART_STORAGE_KEY);
+      const CART_URI = `${FileSystem.documentDirectory}${CART_FILE_NAME}`
+      await FileSystem.deleteAsync(CART_URI)
       setCart([]);
     } catch (error) {
       console.error("Failed to clear cart from storage", error);
@@ -158,7 +258,8 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   const clearWishList = async () => {
     // Add clearCart function
     try {
-      await AsyncStorage.removeItem(WISHLIST_STORAGE_KEY);
+      const WISHLIST_URI = `${FileSystem.documentDirectory}${WISHLIST_FILE_NAME}`
+      await FileSystem.deleteAsync(WISHLIST_URI)
       setWishlist([]);
     } catch (error) {
       console.error("Failed to clear wishlist from storage", error);
@@ -167,7 +268,7 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart }}
+      value={{ cart, addToCart, removeFromCart, clearCart, updateCartItemQuantity }}
     >
       <WishlistContext.Provider
         value={{ wishlist, addToWishlist, removeFromWishlist, clearWishList }}

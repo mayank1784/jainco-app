@@ -1,10 +1,10 @@
 import { icons } from "@/constants";
 import React, { useState, useEffect, useContext, useCallback } from "react";
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 import HTMLView from "react-native-htmlview";
 import { useWindowDimensions } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   Text,
   View,
@@ -61,6 +61,7 @@ const ProductPage: React.FC = () => {
   const [variations, setVariations] = useState<Variation[] | null>(null);
   const [error, setError] = useState<any>(null);
   const [price, setPrice] = useState<number | null>(null);
+  const [variationTypesArray, setVariationTypesArray] = useState<string[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<VariationType>(
     {}
   ); //handling variation selection
@@ -77,7 +78,6 @@ const ProductPage: React.FC = () => {
     addToCart: () => {},
     clearCart: () => {},
   };
-
 
   // useEffect(() => {
   //   const save = async (data: any) => {
@@ -154,6 +154,14 @@ const ProductPage: React.FC = () => {
       setProductName(demoProduct.name);
     }
   }, [demoProduct]);
+
+  useEffect(() => {
+    if (demoProduct && demoProduct.variationTypes) {
+      setVariationTypesArray(() => {
+        return Object.keys(demoProduct.variationTypes ?? {});
+      });
+    }
+  }, [demoProduct, demoProduct?.variationTypes]);
 
   useEffect(() => {
     if (demoProduct && variations) {
@@ -244,9 +252,8 @@ const ProductPage: React.FC = () => {
       setPrice(selectedVariation.price);
       if (selectedVariation.images && selectedVariation.images.length > 0) {
         updatedImages = [...(selectedVariation.images || []), ...updatedImages];
-     
       }
-     
+
       setImages(updatedImages.filter(Boolean) as string[]);
     } else {
       setPrice(null); // No matching variation found
@@ -310,6 +317,7 @@ const ProductPage: React.FC = () => {
         productId: demoProduct.id,
         price: demoProduct.lowerPrice,
         productMainImage: demoProduct.mainImage,
+        amount: quantity * demoProduct.lowerPrice,
       };
       addToCart(cartItem);
       return;
@@ -324,90 +332,261 @@ const ProductPage: React.FC = () => {
       price: selectedVariation.price,
       productMainImage: demoProduct.mainImage, // Assuming product has a 'mainImage' field
       variationImage: selectedVariation.images?.[0] || demoProduct.mainImage, // Fallback to product main image if no variation image is available
+      amount: quantity * selectedVariation.price,
     };
 
     addToCart(cartItem);
     return;
   };
 
+  // const getFirstValidCombination = (
+  //   initialSelection: VariationType,
+  //   fixedAttributeName: string,
+  //   fixedValue: string,
+  // ): VariationType => {
+  //   let currentSelection = { ...initialSelection, [fixedAttributeName]: fixedValue };
+
+  //   const attributes = Object.keys(demoProduct?.variationTypes ?? {});
+  //   const attributeValues: { [key: string]: string[] } = attributes.reduce((acc, attrName) => {
+  //     acc[attrName] = demoProduct?.variationTypes?.[attrName] ?? []
+  //     return acc;
+  //   }, {} as { [key: string]: string[] });
+
+  //   const generateCombinations = (currentSelection: VariationType, attributesLeft: string[]): VariationType[] => {
+  //     if (attributesLeft.length === 0) {
+  //       return [currentSelection];
+  //     }
+
+  //     const attributeName = attributesLeft[0];
+  //     const values = attributeValues[attributeName];
+  //     const combinations = [];
+
+  //     for (const value of values) {
+  //       const newSelection = { ...currentSelection, [attributeName]: value };
+  //       combinations.push(...generateCombinations(newSelection, attributesLeft.slice(1)));
+  //     }
+
+  //     return combinations;
+  //   };
+
+  //   const allCombinations = generateCombinations(currentSelection, attributes.filter(attrName => attrName !== fixedAttributeName));
+
+  //   for (const combination of allCombinations) {
+  //     if (!isCombinationUnavailable(combination, unavailableComb)) {
+  //       return combination;
+  //     }
+  //   }
+
+  //   return currentSelection;
+  // };
 
   const getFirstValidCombination = (
     initialSelection: VariationType,
-    fixedAttributeName: string,
-    fixedValue: string,
+    fixedAttributes: { [key: string]: string }
   ): VariationType => {
-    let currentSelection = { ...initialSelection, [fixedAttributeName]: fixedValue };
-  
+    // Merge initialSelection with fixedAttributes, fixedAttributes take precedence
+    let currentSelection = { ...initialSelection, ...fixedAttributes };
+    // console.log(
+    //   "initial selection: ",
+    //   JSON.stringify(initialSelection, null, 2)
+    // );
+    // console.log(
+    //   "current selection: ",
+    //   JSON.stringify(currentSelection, null, 2)
+    // );
+    // console.log(
+    //   "fixed selection: ",
+    //   JSON.stringify({ ...fixedAttributes }, null, 2)
+    // );
+
     const attributes = Object.keys(demoProduct?.variationTypes ?? {});
-    const attributeValues: { [key: string]: string[] } = attributes.reduce((acc, attrName) => {
-      acc[attrName] = demoProduct?.variationTypes?.[attrName] ?? []
-      return acc;
-    }, {} as { [key: string]: string[] });
-  
-    const generateCombinations = (currentSelection: VariationType, attributesLeft: string[]): VariationType[] => {
+    const attributeValues: { [key: string]: string[] } = attributes.reduce(
+      (acc, attrName) => {
+        acc[attrName] = demoProduct?.variationTypes?.[attrName] ?? [];
+        return acc;
+      },
+      {} as { [key: string]: string[] }
+    );
+
+    const generateCombinations = (
+      currentSelection: VariationType,
+      attributesLeft: string[]
+    ): VariationType[] => {
       if (attributesLeft.length === 0) {
         return [currentSelection];
       }
-  
+
       const attributeName = attributesLeft[0];
       const values = attributeValues[attributeName];
       const combinations = [];
-  
+
       for (const value of values) {
         const newSelection = { ...currentSelection, [attributeName]: value };
-        combinations.push(...generateCombinations(newSelection, attributesLeft.slice(1)));
+        combinations.push(
+          ...generateCombinations(newSelection, attributesLeft.slice(1))
+        );
       }
-  
+
       return combinations;
     };
-  
-    const allCombinations = generateCombinations(currentSelection, attributes.filter(attrName => attrName !== fixedAttributeName));
-  
+
+    // Identify attributes that are not fixed
+    const nonFixedAttributes = attributes.filter(
+      (attrName) => !(attrName in fixedAttributes)
+    );
+    // console.log("non fixed attr: ", nonFixedAttributes);
+    // Generate combinations by varying the non-fixed attributes
+    const allCombinations = generateCombinations(
+      currentSelection,
+      nonFixedAttributes
+    );
+    // console.log(
+    //   "all combi with fixed attr: ",
+    //   JSON.stringify(allCombinations, null, 2)
+    // );
+    // Find the first valid combination that is not unavailable
     for (const combination of allCombinations) {
       if (!isCombinationUnavailable(combination, unavailableComb)) {
         return combination;
       }
     }
-  
-    return currentSelection;
+
+    // Return the initial selection with fixed attributes if no valid combination is found
+    return initialSelection;
   };
 
-  const firstAttributeHandleAttributeSelection = (attributeName:string, value:string) => {
+  const firstAttributeHandleAttributeSelection = (
+    attributeName: string,
+    value: string
+  ) => {
     const newSelection = { ...selectedAttributes, [attributeName]: value };
-   
-    const validCombination = getFirstValidCombination(newSelection,attributeName, value);
+    const obj = { [attributeName]: value };
+    const validCombination = getFirstValidCombination(newSelection, obj);
+    // const validCombination = getFirstValidCombination(newSelection,attributeName, value);
+    // console.log(JSON.stringify(validCombination, null, 2));
 
     setSelectedAttributes(validCombination || newSelection);
   };
 
+  //logic from second attribute to last attribute selction such that upper attribute is selectable and change only its
+  // lower attributes for availability
 
- 
+  //Function
+  //@@@ Write here
+  const betweenAttributeHandleAttributeSelection = (
+    attributeName: string,
+    value: string,
+    currentIndex: number
+  ) => {
+    const newSelection = { ...selectedAttributes, [attributeName]: value };
 
-const noOfUnavaiCombForAttrValue = useCallback((attributeName:string, attributeValue:string) => {
-  return unavailableComb.filter((combination) => {
-    return combination.combination[attributeName] === attributeValue;
-  }).length;
-}, [unavailableComb]);
-
-const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
-  return (attributeName: string) => {
-    if (!demoProduct?.variationTypes) return 0;
-
-    const attributeCounts = Object.entries(demoProduct.variationTypes)
-      .filter(([key]) => key !== attributeName) // Exclude the specified attribute
-      .map(([, values]) => values.length); // Get the length of each attribute's values
-
-    return attributeCounts.reduce((acc, count) => acc * count, 1); // Calculate the total combinations
+    if (
+      Object.keys(selectedAttributes).length ===
+      Object.keys(demoProduct?.variationTypes ?? {}).length
+    ) {
+      const fixedAttributes: { [key: string]: string } = {};
+      const upperAttributes = variationTypesArray.slice(0, currentIndex + 1);
+      // console.log(
+      //   "upper attributes: ",
+      //   JSON.stringify(upperAttributes, null, 2)
+      // );
+      upperAttributes.forEach((attr) => {
+        if (newSelection[attr]) {
+          fixedAttributes[attr] = newSelection[attr];
+        }
+      });
+      fixedAttributes[attributeName] = value;
+      // console.log("selected attributes before selection: ", selectedAttributes);
+      const validCombination = getFirstValidCombination(
+        selectedAttributes,
+        fixedAttributes
+      );
+      // console.log(
+      //   "valid combi under handleSelection: ",
+      //   JSON.stringify(validCombination, null, 2)
+      // );
+      setSelectedAttributes(validCombination);
+    } else {
+      firstAttributeHandleAttributeSelection(attributeName, value);
+    }
   };
-}, [demoProduct?.variationTypes]);
 
-const areAllCombinationsUnavailable = useCallback((attributeName:string, attributeValue:string) => {
-  const a = getNoOfTotalPossibleCombForAttrValue(attributeName)
-  const b = noOfUnavaiCombForAttrValue(attributeName, attributeValue)
-  return a===b
-}, [unavailableComb, demoProduct?.variationTypes]);
+  // const noOfUnavaiCombForAttrValue = useCallback((attributeName:string, attributeValue:string) => {
+  //   return unavailableComb.filter((combination) => {
+  //     return combination.combination[attributeName] === attributeValue;
+  //   }).length;
+  // }, [unavailableComb]);
+  const noOfUnavaiCombForAttrValue = useCallback(
+    (attributes: Record<string, string>) => {
+      return unavailableComb.filter((combination) => {
+        return Object.entries(attributes).every(([attrName, attrValue]) => {
+          return combination.combination[attrName] === attrValue;
+        });
+      }).length;
+    },
+    [unavailableComb]
+  );
+
+  // const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
+  //   return (attributeName: string) => {
+  //     if (!demoProduct?.variationTypes) return 0;
+
+  //     const attributeCounts = Object.entries(demoProduct.variationTypes)
+  //       .filter(([key]) => key !== attributeName) // Exclude the specified attribute
+  //       .map(([, values]) => values.length); // Get the length of each attribute's values
+
+  //     return attributeCounts.reduce((acc, count) => acc * count, 1); // Calculate the total combinations
+  //   };
+  // }, [demoProduct?.variationTypes]);
+  const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
+    return (attributeNames: string[]) => {
+      if (!demoProduct?.variationTypes) return 0;
+
+      const attributeCounts = Object.entries(demoProduct.variationTypes)
+        .filter(([key]) => !attributeNames.includes(key)) // Exclude the specified attributes
+        .map(([, values]) => values.length); // Get the length of each attribute's values
+
+      return attributeCounts.reduce((acc, count) => acc * count, 1); // Calculate the total combinations
+    };
+  }, [demoProduct?.variationTypes]);
+
+  // const areAllCombinationsUnavailable = useCallback((attributeName:string, attributeValue:string) => {
+  //   const a = getNoOfTotalPossibleCombForAttrValue(attributeName)
+  //   const b = noOfUnavaiCombForAttrValue(attributeName, attributeValue)
+  //   return a===b
+  // }, [unavailableComb, demoProduct?.variationTypes]);
+
+  const areAllCombinationsUnavailable = useCallback(
+    (attributes: Record<string, string>) => {
+      const a = getNoOfTotalPossibleCombForAttrValue(Object.keys(attributes));
+      const b = noOfUnavaiCombForAttrValue(attributes);
+      return a === b;
+    },
+    [unavailableComb, demoProduct?.variationTypes]
+  );
 
   const { width } = useWindowDimensions();
+
+  const handleDisabledState = (
+    attributeName: string,
+    value: string,
+    index: number
+  ) => {
+    const upperAttributes = variationTypesArray.slice(0, index + 1);
+    const fixedAttributes: Record<string, string> = {};
+
+    // console.log('attr naem: ',attributeName)
+    // console.log('attr value: ', value)
+
+    upperAttributes.forEach((attr) => {
+      fixedAttributes[attr] = selectedAttributes[attr];
+    });
+    fixedAttributes[attributeName] = value;
+
+    // console.log('disabled state fixed: ', JSON.stringify(fixedAttributes,null,2))
+
+    return areAllCombinationsUnavailable(fixedAttributes);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full">
@@ -486,7 +665,7 @@ const areAllCombinationsUnavailable = useCallback((attributeName:string, attribu
               // Use optional chaining to safely access variationTypes and its properties
               Object.keys(demoProduct.variationTypes ?? {}).length > 0 ? (
                 Object.keys(demoProduct.variationTypes ?? {}).map(
-                  (attributeName,idx) => (
+                  (attributeName, idx, array) => (
                     <View key={attributeName} className="mt-4">
                       <Text className="text-primary-400 capitalize font-iregular">
                         {attributeName}
@@ -495,22 +674,65 @@ const areAllCombinationsUnavailable = useCallback((attributeName:string, attribu
                         {demoProduct.variationTypes?.[attributeName]?.length ? (
                           demoProduct.variationTypes[attributeName].map(
                             (value: string, index: number) => {
-                              const isDisabled = isCombinationUnavailable(
-                                {
-                                  ...selectedAttributes,
-                                  [attributeName]: value,
-                                },
-                                unavailableComb
-                              );
+                              // const isDisabled = isCombinationUnavailable(
+                              //   {
+                              //     ...selectedAttributes,
+                              //     [attributeName]: value,
+                              //   },
+                              //   unavailableComb
+                              // );
+                              // const isDisabled = areAllCombinationsUnavailable(attributeName, value)
                               const isSelected =
                                 selectedAttributes[attributeName] === value;
 
-                                if(idx===0){
+                              if (idx === array.length - 1) {
+                                const isDisabled = isCombinationUnavailable(
+                                  {
+                                    ...selectedAttributes,
+                                    [attributeName]: value,
+                                  },
+                                  unavailableComb
+                                );
 
-                                  const isDisabled=areAllCombinationsUnavailable(attributeName,value)
+                                return (
+                                  <TouchableOpacity
+                                    key={index}
+                                    onPress={() =>
+                                      !isDisabled &&
+                                      handleAttributeSelection(
+                                        attributeName,
+                                        value
+                                      )
+                                    }
+                                    className={`rounded-md py-2 mr-2 mb-2 px-4 ${
+                                      isSelected
+                                        ? "bg-secondary text-black"
+                                        : isDisabled
+                                        ? "border-dotted border border-red-500"
+                                        : "border border-primary-200"
+                                    }`}
+                                    disabled={isDisabled}
+                                  >
+                                    <Text
+                                      className={`font-rregular capitalize ${
+                                        isDisabled && "text-primary-100"
+                                      }`}
+                                    >
+                                      {value}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                                // }
+                              }
 
-                                  return(
-                                    <TouchableOpacity
+                              if (idx === 0) {
+                                const isDisabled =
+                                  areAllCombinationsUnavailable({
+                                    [attributeName]: value,
+                                  });
+
+                                return (
+                                  <TouchableOpacity
                                     key={index}
                                     onPress={() =>
                                       !isDisabled &&
@@ -526,26 +748,38 @@ const areAllCombinationsUnavailable = useCallback((attributeName:string, attribu
                                         ? "border-dotted border border-red-500"
                                         : "border border-primary-200"
                                     }`}
-                                   disabled={isDisabled}
+                                    disabled={isDisabled}
                                   >
                                     <Text
-                                      className={`font-rregular capitalize ${isDisabled && "text-primary-100"}`}
+                                      className={`font-rregular capitalize ${
+                                        isDisabled && "text-primary-100"
+                                      }`}
                                     >
                                       {value}
                                     </Text>
                                   </TouchableOpacity>
-                                  )
-                                }
-
+                                );
+                              }
+                              const isDisabled = handleDisabledState(
+                                attributeName,
+                                value,
+                                idx
+                              );
                               return (
                                 <TouchableOpacity
                                   key={index}
-                                  onPress={() =>
-                                    !isDisabled &&
-                                    handleAttributeSelection(
-                                      attributeName,
-                                      value
-                                    )
+                                  onPress={
+                                    () =>
+                                      !isDisabled &&
+                                      betweenAttributeHandleAttributeSelection(
+                                        attributeName,
+                                        value,
+                                        idx
+                                      )
+                                    // handleAttributeSelection(
+                                    //   attributeName,
+                                    //   value
+                                    // )
                                   }
                                   className={`rounded-md py-2 mr-2 mb-2 px-4 ${
                                     isSelected
@@ -627,14 +861,19 @@ const areAllCombinationsUnavailable = useCallback((attributeName:string, attribu
                 </Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              className="bg-primary rounded-md w-1/5 p-2"
-              onPress={() => {
-                clearCart();
-              }}
-            >
-              <Text className="text-white">clear cart</Text>
-            </TouchableOpacity>
+            <View className="flex-row mt-2 items-center gap-x-2 justify-start">
+              <TouchableOpacity
+                className="bg-primary rounded-md w-1/5 p-2"
+                onPress={() => {
+                  clearCart();
+                }}
+              >
+                <Text className="text-white">clear cart</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className="bg-secondary rounded-md text-white p-2">
+                <Link href={"/(tabs)/cart"}>Go to Cart</Link>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       ) : error ? (

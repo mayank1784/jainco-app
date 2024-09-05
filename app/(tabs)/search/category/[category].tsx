@@ -10,117 +10,153 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import React, {
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-} from "react";
+import React, { useEffect, useRef, useState, useCallback, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { icons, images } from "@/constants";
 import CartWishlistIcons from "@/components/CartWishListIcons";
-import { CartContext, WishlistContext } from "@/context/CartWishListContext";
 import ProductCard from "@/components/ProductCard";
 import { fetchProductsByCategory } from "@/services/firebaseFunctions";
-import { ProductSmall } from "@/lib/types";
 import { useCategory } from "@/context/CategoryContex";
+import { loadProductsFromCache, saveProductsToCache } from "@/lib/cacheUtils";
+import { ProductSmall } from "@/lib/types";
+import { CartContext } from "@/context/CartWishListContext";
 
-const CategorySearchScreen = () => {
-  const { category } = useCategory();
-  // const { categoryId } = useLocalSearchParams<{ categoryId: string }>();
-
+const AnimatedImageHeader: React.FC<{ imageUri: string; description:string }> = ({ imageUri, description }) => {
   const [isCovering, setIsCovering] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [data, setData] = useState<ProductSmall[]>([]);
-
-  const { cart, addToCart, removeFromCart, clearCart } = useContext(
-    CartContext
-  ) || {
-    cart: [],
-    addToCart: () => {},
-    removeFromCart: () => {},
-    clearCart: () => {},
-  };
-
-  const { wishlist, addToWishlist, removeFromWishlist, clearWishList } =
-    useContext(WishlistContext) || {
-      wishlist: [],
-      addToWishlist: () => {},
-      removeFromWishlist: () => {},
-      clearWishList: () => {},
-    };
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   const toggleCovering = () => {
     setIsCovering((prev) => !prev);
-    Animated.timing(slideAnim, {
-      toValue: isCovering ? 0 : 1,
-      duration: 2000,
-      useNativeDriver: false,
-    }).start(() => {
-      // Animation complete, pause for 2 seconds
-      setTimeout(() => {
-        setIsCovering(!isCovering);
-      }, 2000);
-    });
+    
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: isCovering ? 0 : 1,
+        duration: 2000,
+        useNativeDriver: false,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: isCovering ? 0 : 1,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const slideInterpolation = slideAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0%", "40%"], // Adjust as needed
+    outputRange: ["0%", "45%"], // Adjust as needed
   });
+
+
   useFocusEffect(
     React.useCallback(() => {
-      const animationTimeout = setTimeout(() => {
-        setIsCovering(true);
+     
+      Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 1,
           duration: 2000,
           useNativeDriver: false,
-        }).start(() => {
-          // Animation complete, pause for 2 seconds
-          setTimeout(() => {
-            setIsCovering(false);
-          }, 2000);
-        });
-      }, 1000);
-
-      return () => clearTimeout(animationTimeout);
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      // No automatic slide back
+      return () => {
+        slideAnim.setValue(1); // Ensure the animation stays in the "covered" state on unmount
+        opacityAnim.setValue(1);
+      };
     }, [])
   );
 
-  useEffect(() => {
-    return () => {
-      // Clean up animation on unmount
-      slideAnim.setValue(0);
+  return (
+    <TouchableOpacity onPress={toggleCovering} activeOpacity={1}>
+      <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
+        <Image
+          className="flex-1 w-full h-full z-99999"
+          resizeMode="cover"
+          source={{
+            uri: imageUri,
+          }}
+        />
+
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: slideInterpolation,
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            // paddingHorizontal: 10,
+          }} 
+        >
+          <Animated.Text
+            style={{
+              color: "white",
+              textAlign: "center",
+              opacity: opacityAnim, // Fade in/out the text
+              position: "absolute", // Keep the text centered
+            }}
+            className="text-iregular text-lg capitalize"
+          >
+           {description}
+          </Animated.Text>
+          
+          
+          </Animated.View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const CategorySearchScreen = () => {
+  const { category } = useCategory();
+  const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [data, setData] = useState<ProductSmall[]>([]);
+  
+    const { cart, addToCart, removeFromCart, clearCart } = useContext(
+      CartContext
+    ) || {
+      cart: [],
+      addToCart: () => {},
+      removeFromCart: () => {},
+      clearCart: () => {},
     };
-  }, []);
+  
 
-  // For fetching List Data and loading animation
-  // Fetch product data
+
+
   const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const products = await fetchProductsByCategory(category.id || "");
-      setData(products);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [category.id]);
-
-  // Refresh the product list
+        setLoading(true);
+        try {
+          let cachedProducts = await loadProductsFromCache(category.id || "");
+          if (cachedProducts.length > 0) {
+            setData(cachedProducts);
+          } else {
+            const products = await fetchProductsByCategory(category.id || "");
+            await saveProductsToCache(products, category.id || "");
+            setData(products);
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+        } finally {
+          setLoading(false);
+        }
+      }, [category.id]);
+    
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      const refreshedProducts = await fetchProductsByCategory(
-        category.id || ""
-      );
-
+      const refreshedProducts = await fetchProductsByCategory(category.id || "");
+      await saveProductsToCache(refreshedProducts, category.id || "");
       setData(refreshedProducts);
     } catch (error) {
       console.error("Error refreshing products:", error);
@@ -133,7 +169,7 @@ const CategorySearchScreen = () => {
     if (category.id) {
       fetchData();
     }
-  }, [category.id, fetchData]);
+  }, [category.id]);
 
   if (loading) {
     return (
@@ -157,6 +193,7 @@ const CategorySearchScreen = () => {
       </SafeAreaView>
     );
   }
+
   return (
     <SafeAreaView className="bg-zinc-150 h-full w-full flex px-2">
       <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-2">
@@ -187,30 +224,7 @@ const CategorySearchScreen = () => {
           />
         }
         ListHeaderComponent={() => (
-          <>
-            <TouchableOpacity onPress={toggleCovering}>
-              <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
-                <Image
-                  className="flex-1 w-full h-full z-99999"
-                  resizeMode="cover"
-                  source={{
-                    uri: category.image,
-                  }}
-                />
-
-                <Animated.View
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: slideInterpolation,
-                    height: "100%",
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
-          </>
+          <AnimatedImageHeader imageUri={category.image} description={category.description} />
         )}
         ListFooterComponent={() => (
           <View className="w-full h-auto justify-start items-center mt-2 mb-2">
