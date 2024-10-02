@@ -1,10 +1,14 @@
-import { icons } from "@/constants";
+import { icons, images as constImages } from "@/constants";
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useMemo } from "react";
 
 import HTMLView from "react-native-htmlview";
 import { useWindowDimensions } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
+// import { ImageZoom } from '@likashefqet/react-native-image-zoom';
+// import ImageZoom from "@/lib/imageZoom";
+import ZoomableImage from "@/components/ZoomableImage"
+import SearchInput from "@/components/SearchInput";
 import {
   Text,
   View,
@@ -17,7 +21,10 @@ import {
   ViewToken,
   TextInput,
   ActivityIndicator,
+  Modal,
+  BackHandler,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Product,
@@ -32,7 +39,9 @@ import {
 } from "@/services/firebaseFunctions";
 import { findUnavailableCombinations } from "@/lib/utilityFunctions";
 
-const { width: viewportWidth } = Dimensions.get("window");
+const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
+// Define thresholds for different screen sizes (e.g., tablets)
+const isTablet = viewportWidth >= 480; // You can adjust this threshold based on your needs
 
 // const saveDataToLocalServer = async (data: any) => {
 //   try {
@@ -73,6 +82,7 @@ const ProductPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(10);
 
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isModalVisible, setModalVisible] = useState(false);
   const { cart, addToCart, clearCart } = useContext(CartContext) || {
     cart: [],
     addToCart: () => {},
@@ -339,65 +349,12 @@ const ProductPage: React.FC = () => {
     return;
   };
 
-  // const getFirstValidCombination = (
-  //   initialSelection: VariationType,
-  //   fixedAttributeName: string,
-  //   fixedValue: string,
-  // ): VariationType => {
-  //   let currentSelection = { ...initialSelection, [fixedAttributeName]: fixedValue };
-
-  //   const attributes = Object.keys(demoProduct?.variationTypes ?? {});
-  //   const attributeValues: { [key: string]: string[] } = attributes.reduce((acc, attrName) => {
-  //     acc[attrName] = demoProduct?.variationTypes?.[attrName] ?? []
-  //     return acc;
-  //   }, {} as { [key: string]: string[] });
-
-  //   const generateCombinations = (currentSelection: VariationType, attributesLeft: string[]): VariationType[] => {
-  //     if (attributesLeft.length === 0) {
-  //       return [currentSelection];
-  //     }
-
-  //     const attributeName = attributesLeft[0];
-  //     const values = attributeValues[attributeName];
-  //     const combinations = [];
-
-  //     for (const value of values) {
-  //       const newSelection = { ...currentSelection, [attributeName]: value };
-  //       combinations.push(...generateCombinations(newSelection, attributesLeft.slice(1)));
-  //     }
-
-  //     return combinations;
-  //   };
-
-  //   const allCombinations = generateCombinations(currentSelection, attributes.filter(attrName => attrName !== fixedAttributeName));
-
-  //   for (const combination of allCombinations) {
-  //     if (!isCombinationUnavailable(combination, unavailableComb)) {
-  //       return combination;
-  //     }
-  //   }
-
-  //   return currentSelection;
-  // };
-
   const getFirstValidCombination = (
     initialSelection: VariationType,
     fixedAttributes: { [key: string]: string }
   ): VariationType => {
     // Merge initialSelection with fixedAttributes, fixedAttributes take precedence
     let currentSelection = { ...initialSelection, ...fixedAttributes };
-    // console.log(
-    //   "initial selection: ",
-    //   JSON.stringify(initialSelection, null, 2)
-    // );
-    // console.log(
-    //   "current selection: ",
-    //   JSON.stringify(currentSelection, null, 2)
-    // );
-    // console.log(
-    //   "fixed selection: ",
-    //   JSON.stringify({ ...fixedAttributes }, null, 2)
-    // );
 
     const attributes = Object.keys(demoProduct?.variationTypes ?? {});
     const attributeValues: { [key: string]: string[] } = attributes.reduce(
@@ -434,16 +391,13 @@ const ProductPage: React.FC = () => {
     const nonFixedAttributes = attributes.filter(
       (attrName) => !(attrName in fixedAttributes)
     );
-    // console.log("non fixed attr: ", nonFixedAttributes);
+
     // Generate combinations by varying the non-fixed attributes
     const allCombinations = generateCombinations(
       currentSelection,
       nonFixedAttributes
     );
-    // console.log(
-    //   "all combi with fixed attr: ",
-    //   JSON.stringify(allCombinations, null, 2)
-    // );
+
     // Find the first valid combination that is not unavailable
     for (const combination of allCombinations) {
       if (!isCombinationUnavailable(combination, unavailableComb)) {
@@ -486,36 +440,25 @@ const ProductPage: React.FC = () => {
     ) {
       const fixedAttributes: { [key: string]: string } = {};
       const upperAttributes = variationTypesArray.slice(0, currentIndex + 1);
-      // console.log(
-      //   "upper attributes: ",
-      //   JSON.stringify(upperAttributes, null, 2)
-      // );
+
       upperAttributes.forEach((attr) => {
         if (newSelection[attr]) {
           fixedAttributes[attr] = newSelection[attr];
         }
       });
       fixedAttributes[attributeName] = value;
-      // console.log("selected attributes before selection: ", selectedAttributes);
+
       const validCombination = getFirstValidCombination(
         selectedAttributes,
         fixedAttributes
       );
-      // console.log(
-      //   "valid combi under handleSelection: ",
-      //   JSON.stringify(validCombination, null, 2)
-      // );
+
       setSelectedAttributes(validCombination);
     } else {
       firstAttributeHandleAttributeSelection(attributeName, value);
     }
   };
 
-  // const noOfUnavaiCombForAttrValue = useCallback((attributeName:string, attributeValue:string) => {
-  //   return unavailableComb.filter((combination) => {
-  //     return combination.combination[attributeName] === attributeValue;
-  //   }).length;
-  // }, [unavailableComb]);
   const noOfUnavaiCombForAttrValue = useCallback(
     (attributes: Record<string, string>) => {
       return unavailableComb.filter((combination) => {
@@ -527,17 +470,6 @@ const ProductPage: React.FC = () => {
     [unavailableComb]
   );
 
-  // const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
-  //   return (attributeName: string) => {
-  //     if (!demoProduct?.variationTypes) return 0;
-
-  //     const attributeCounts = Object.entries(demoProduct.variationTypes)
-  //       .filter(([key]) => key !== attributeName) // Exclude the specified attribute
-  //       .map(([, values]) => values.length); // Get the length of each attribute's values
-
-  //     return attributeCounts.reduce((acc, count) => acc * count, 1); // Calculate the total combinations
-  //   };
-  // }, [demoProduct?.variationTypes]);
   const getNoOfTotalPossibleCombForAttrValue = useMemo(() => {
     return (attributeNames: string[]) => {
       if (!demoProduct?.variationTypes) return 0;
@@ -550,12 +482,6 @@ const ProductPage: React.FC = () => {
     };
   }, [demoProduct?.variationTypes]);
 
-  // const areAllCombinationsUnavailable = useCallback((attributeName:string, attributeValue:string) => {
-  //   const a = getNoOfTotalPossibleCombForAttrValue(attributeName)
-  //   const b = noOfUnavaiCombForAttrValue(attributeName, attributeValue)
-  //   return a===b
-  // }, [unavailableComb, demoProduct?.variationTypes]);
-
   const areAllCombinationsUnavailable = useCallback(
     (attributes: Record<string, string>) => {
       const a = getNoOfTotalPossibleCombForAttrValue(Object.keys(attributes));
@@ -567,6 +493,32 @@ const ProductPage: React.FC = () => {
 
   const { width } = useWindowDimensions();
 
+  const openModal = () => {
+    setActiveSlide(0);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+  const imagesWithObjects = images.map(url => ({ url }));
+  // Handle back button press to close modal
+  useEffect(() => {
+    const backAction = () => {
+      if (isModalVisible) {
+        closeModal(); // Close the modal when back button is pressed
+        return true; // Prevent default back action
+      }
+      return false; // Allow default back action if modal is not visible
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+    // Clean up the event listener on component unmount
+    return () => backHandler.remove();
+  }, [isModalVisible]);
+  
+
   const handleDisabledState = (
     attributeName: string,
     value: string,
@@ -575,15 +527,10 @@ const ProductPage: React.FC = () => {
     const upperAttributes = variationTypesArray.slice(0, index + 1);
     const fixedAttributes: Record<string, string> = {};
 
-    // console.log('attr naem: ',attributeName)
-    // console.log('attr value: ', value)
-
     upperAttributes.forEach((attr) => {
       fixedAttributes[attr] = selectedAttributes[attr];
     });
     fixedAttributes[attributeName] = value;
-
-    // console.log('disabled state fixed: ', JSON.stringify(fixedAttributes,null,2))
 
     return areAllCombinationsUnavailable(fixedAttributes);
   };
@@ -597,19 +544,35 @@ const ProductPage: React.FC = () => {
       ) : demoProduct ? (
         <ScrollView>
           <View>
+          <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-0 px-2">
+        <View className="flex flex-row justify-center items-center w-14 h-14">
+          <Image
+            source={constImages.logo}
+            resizeMode="contain"
+            className="w-full h-full"
+          />
+        </View>
+        {/* <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
+          aaloo
+        </Text> */}
+        <View className="flex flex-row justify-center w-[80%] items-center">
+        <SearchInput/></View>
+      </View>
             <FlatList
               data={images}
               keyExtractor={(item, index) => index.toString()}
               renderItem={({ item }) => (
-                <View
-                  style={{
-                    width: viewportWidth,
-                    alignItems: "center",
-                    padding: 16,
-                  }}
-                >
-                  <Image source={{ uri: item }} style={styles.image} />
-                </View>
+                <TouchableOpacity onPress={openModal}>
+                  <View
+                    style={{
+                      width: viewportWidth,
+                      alignItems: "center",
+                      padding: 16,
+                    }}
+                  >
+                    <Image source={{ uri: item }} style={styles.image} />
+                  </View>
+                </TouchableOpacity>
               )}
               horizontal
               pagingEnabled
@@ -629,8 +592,59 @@ const ProductPage: React.FC = () => {
                 />
               ))}
             </View>
+           
+            {/* ============================================================== */}
+            {/* Modal for full screen image slider with zooming functionality */}
+            <Modal visible={isModalVisible} transparent={true} animationType="slide">
+        <View className="flex bg-primary bg-opacity-50 justify-center items-center h-full w-full">
+          {/* Close button */}
+          <TouchableOpacity onPress={closeModal} className="absolute top-8 right-8 z-10">
+            <Text className="text-white text-xl bg-black p-4 rounded-xl">Close</Text>
+          </TouchableOpacity>
+
+           {/* Image Zoom component */}
+          
+           <View className="flex flex-col justify-center items-center">
+           <FlatList
+              data={images}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View className="" style={{width: viewportWidth, height: viewportWidth}}>
+                
+         
+              <Image source={{uri:item}} 
+              className="w-full h-full" resizeMode="cover"
+              />
+         </View>
+
+               )}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onViewableItemsChanged={viewableItemChanges}
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: 90,
+              }}
+            />
+      </View>
+        
+          {/* Indicator for current image in modal */}
+          <View className="flex-row justify-center mt-2 mb-4">
+            {images.map((_, index) => (
+              <View
+                key={index}
+                className={`h-2 w-2 rounded-full mx-1 ${
+                  index === activeSlide ? "bg-secondary" : "bg-primary-200"
+                }`}
+              />
+            ))}
+          </View>
+        </View>
+      </Modal>
+            {/* ============================================================================================================= */}
           </View>
           <View className="p-4">
+          
             {/* Product Name */}
             <Text className="text-2xl font-lbold mt-0 capitalize">
               {productName}
@@ -674,14 +688,6 @@ const ProductPage: React.FC = () => {
                         {demoProduct.variationTypes?.[attributeName]?.length ? (
                           demoProduct.variationTypes[attributeName].map(
                             (value: string, index: number) => {
-                              // const isDisabled = isCombinationUnavailable(
-                              //   {
-                              //     ...selectedAttributes,
-                              //     [attributeName]: value,
-                              //   },
-                              //   unavailableComb
-                              // );
-                              // const isDisabled = areAllCombinationsUnavailable(attributeName, value)
                               const isSelected =
                                 selectedAttributes[attributeName] === value;
 
@@ -768,18 +774,13 @@ const ProductPage: React.FC = () => {
                               return (
                                 <TouchableOpacity
                                   key={index}
-                                  onPress={
-                                    () =>
-                                      !isDisabled &&
-                                      betweenAttributeHandleAttributeSelection(
-                                        attributeName,
-                                        value,
-                                        idx
-                                      )
-                                    // handleAttributeSelection(
-                                    //   attributeName,
-                                    //   value
-                                    // )
+                                  onPress={() =>
+                                    !isDisabled &&
+                                    betweenAttributeHandleAttributeSelection(
+                                      attributeName,
+                                      value,
+                                      idx
+                                    )
                                   }
                                   className={`rounded-md py-2 mr-2 mb-2 px-4 ${
                                     isSelected
@@ -892,14 +893,32 @@ const ProductPage: React.FC = () => {
 };
 const styles = StyleSheet.create({
   image: {
-    width: viewportWidth,
-    height: 300,
-    resizeMode: "cover",
+    width:viewportWidth,
+    height: isTablet ? viewportWidth*0.85 : 330,
+    resizeMode: "stretch",
     borderRadius: 0,
   },
   htmlContainer: {
     marginTop: 10,
     marginBottom: 15,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+  },
+  closeText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  imageContainer: {
+    width: '100%',
+    height: '100%',
   },
 });
 export default ProductPage;

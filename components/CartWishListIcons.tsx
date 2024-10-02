@@ -36,7 +36,7 @@ const CartWishlistIcons: React.FC = () => {
           )}
         </TouchableOpacity>
       </View>
-      <View className="relative">
+      {/* <View className="relative">
         <TouchableOpacity>
           <Image
             source={icons.wishlistcart}
@@ -47,7 +47,7 @@ const CartWishlistIcons: React.FC = () => {
             <View className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
           )}
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };

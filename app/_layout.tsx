@@ -7,6 +7,7 @@ import { Text } from "react-native";
 import { CartWishlistProvider } from "@/context/CartWishListContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { CategoryProvider } from "@/context/CategoryContex";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -26,6 +27,8 @@ export default function RootLayout() {
   if (!fontsLoaded && !error) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+     
     <AuthProvider>
       <CartWishlistProvider>
         <CategoryProvider>
@@ -36,5 +39,6 @@ export default function RootLayout() {
         </CategoryProvider>
       </CartWishlistProvider>
     </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

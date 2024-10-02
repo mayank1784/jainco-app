@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState, useCallback, useContext } from "react";
+import { Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { icons, images } from "@/constants";
@@ -21,11 +22,19 @@ import { useCategory } from "@/context/CategoryContex";
 import { loadProductsFromCache, saveProductsToCache } from "@/lib/cacheUtils";
 import { ProductSmall } from "@/lib/types";
 import { CartContext } from "@/context/CartWishListContext";
+import SearchInput from "@/components/SearchInput";
 
 const AnimatedImageHeader: React.FC<{ imageUri: string; description:string }> = ({ imageUri, description }) => {
+  const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
+
   const [isCovering, setIsCovering] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const imageStyles = StyleSheet.create({
+    heroImage: {
+      height: viewportWidth*0.8
+    }
+  })
 
   const toggleCovering = () => {
     setIsCovering((prev) => !prev);
@@ -73,12 +82,14 @@ const AnimatedImageHeader: React.FC<{ imageUri: string; description:string }> = 
     }, [])
   );
 
+
   return (
     <TouchableOpacity onPress={toggleCovering} activeOpacity={1}>
-      <View className="flex flex-col w-full h-[38vh] rounded-xl border-x-4 border-y-4 border-secondary mt-5 overflow-hidden">
+      <View className="flex flex-col w-full rounded-xl border-x-4 border-y-4 border-secondary mt-1 overflow-hidden" style={imageStyles.heroImage}>
+      
         <Image
           className="flex-1 w-full h-full z-99999"
-          resizeMode="cover"
+          resizeMode="stretch"
           source={{
             uri: imageUri,
           }}
@@ -196,7 +207,7 @@ const CategorySearchScreen = () => {
 
   return (
     <SafeAreaView className="bg-zinc-150 h-full w-full flex px-2">
-      <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-2">
+      <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-0 px-2">
         <View className="flex flex-row justify-center items-center w-14 h-14">
           <Image
             source={images.logo}
@@ -209,7 +220,7 @@ const CategorySearchScreen = () => {
         </Text>
         <CartWishlistIcons />
       </View>
-
+      
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
@@ -224,7 +235,11 @@ const CategorySearchScreen = () => {
           />
         }
         ListHeaderComponent={() => (
+          <>
+          <View className="flex m-2">
+<SearchInput/></View>
           <AnimatedImageHeader imageUri={category.image} description={category.description} />
+          </>
         )}
         ListFooterComponent={() => (
           <View className="w-full h-auto justify-start items-center mt-2 mb-2">

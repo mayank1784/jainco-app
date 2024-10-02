@@ -1,0 +1,43 @@
+<Modal visible={isModalVisible} transparent={true} animationType="slide">
+        <View className="flex-1 bg-primary bg-opacity-50 justify-center items-center h-full w-full">
+          {/* Close button */}
+          <TouchableOpacity onPress={closeModal} className="absolute top-8 right-8 z-10">
+            <Text className="text-white text-xl">Close</Text>
+          </TouchableOpacity>
+
+           {/* Image Zoom component */}
+          
+           <FlatList
+              data={images}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <View className="w-full h-full">
+              <ZoomableImage imageUri={item} />
+            </View>
+
+              // //  <ImageZoom imageUri={item}/>
+              //  <Image source={{uri:item}} style={styles.image}/>
+              )}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onViewableItemsChanged={viewableItemChanges}
+              viewabilityConfig={{
+                itemVisiblePercentThreshold: 90,
+              }}
+            />
+      
+        
+          {/* Indicator for current image in modal */}
+          <View className="flex-row justify-center mt-2 mb-4">
+            {images.map((_, index) => (
+              <View
+                key={index}
+                className={`h-2 w-2 rounded-full mx-1 ${
+                  index === activeSlide ? "bg-secondary" : "bg-primary-200"
+                }`}
+              />
+            ))}
+          </View>
+        </View>
+      </Modal>

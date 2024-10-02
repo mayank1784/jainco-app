@@ -53,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Image
               source={{ uri: item.mainImage }}
               className="w-full h-full"
-              resizeMode="cover"
+              resizeMode="stretch"
             />
           </View>
         </TouchableOpacity>

@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { CartContext } from "@/context/CartWishListContext";
 import { CartItem } from "@/lib/types";
 import { icons } from "@/constants";
+import { router } from "expo-router";
 
 // StyledRenderItem component
 const StyledRenderItem: React.FC<{
@@ -148,7 +149,9 @@ const Cart: React.FC<any> = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
     > */}
-        <FlatList
+    {cart.length > 0 ? (
+      <>
+      <FlatList
           data={cart}
           renderItem={({ item }) => (
             <StyledRenderItem
@@ -161,6 +164,27 @@ const Cart: React.FC<any> = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
         <CartSummary total={total} />
+        </>
+    ) : (
+      <>
+      <View className="font-iregular flex items-center justify-center w-full h-full">
+        <Text className="text-2xl">Cart is empty ! 🙁 </Text>
+        <Text className="text-xl">Add your first product now...</Text>
+        <TouchableOpacity
+                className="bg-secondary rounded-2xl py-4 px-4 mt-4"
+                onPress={() => {
+                  router.push("/")
+                }}
+              >
+                <Text className="text-center text-white text-xl font-bold">
+                 Find Products
+                </Text>
+              </TouchableOpacity>
+      </View>
+      </>
+
+    )}
+        
       {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );
