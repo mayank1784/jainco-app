@@ -16,4 +16,6 @@ export default {
   eye: require("@/assets/icons/eye.png"),
   eyeHide: require("@/assets/icons/eye-hide.png"),
   logout: require("@/assets/icons/logout.png"),
+  order: require("@/assets/icons/order.png"),
+  close: require("@/assets/icons/close.png")
 };

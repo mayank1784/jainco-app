@@ -321,15 +321,15 @@ const ProductPage: React.FC = () => {
 
     // If no matching variation is found, return or show an error
     if (!selectedVariation) {
-      const cartItem = {
-        qty: quantity,
-        productName: productName,
-        productId: demoProduct.id,
-        price: demoProduct.lowerPrice,
-        productMainImage: demoProduct.mainImage,
-        amount: quantity * demoProduct.lowerPrice,
-      };
-      addToCart(cartItem);
+      // const cartItem = {
+      //   qty: quantity,
+      //   productName: productName,
+      //   productId: demoProduct.id,
+      //   price: demoProduct.lowerPrice,
+      //   productMainImage: demoProduct.mainImage,
+      //   amount: quantity * demoProduct.lowerPrice,
+      // };
+      // addToCart(cartItem);
       return;
     }
     // Prepare the cart item details
@@ -552,11 +552,9 @@ const ProductPage: React.FC = () => {
             className="w-full h-full"
           />
         </View>
-        {/* <Text className="text-2xl font-rregular text-black flex flex-row justify-center w-[60%] items-center capitalize">
-          aaloo
-        </Text> */}
-        <View className="flex flex-row justify-center w-[80%] items-center">
-        <SearchInput/></View>
+        <View className="flex-1 mx-2">
+          <SearchInput />
+        </View>
       </View>
             <FlatList
               data={images}
@@ -681,7 +679,7 @@ const ProductPage: React.FC = () => {
                 Object.keys(demoProduct.variationTypes ?? {}).map(
                   (attributeName, idx, array) => (
                     <View key={attributeName} className="mt-4">
-                      <Text className="text-primary-400 capitalize font-iregular">
+                      <Text  className="text-primary-400 capitalize font-iregular">
                         {attributeName}
                       </Text>
                       <View className="flex-row flex-wrap mt-2">

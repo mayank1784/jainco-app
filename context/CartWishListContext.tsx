@@ -9,9 +9,9 @@ import { CartItem } from "@/lib/types";
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: CartItem) => void;
-  removeFromCart: (productId: string, variationId?:string) => void;
+  removeFromCart: (productId: string, variationId:string) => void;
   clearCart: () => void;
-  updateCartItemQuantity: (productId: string, newQuantity: number, variationId?: string) => void;
+  updateCartItemQuantity: (productId: string, newQuantity: number, variationId: string) => void;
 }
 
 interface WishlistContextType {
@@ -125,6 +125,12 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   //   saveWishlist();
   // }, [wishlist]);
 
+useEffect(()=>{
+if (cart.length){
+  console.log(JSON.stringify(cart,null,2))
+}
+},[cart])
+
 // Save cart to file system whenever it changes
  useEffect(() => {
       const saveCart = async () => {
@@ -157,21 +163,26 @@ export const CartWishlistProvider: React.FC<{ children: ReactNode }> = ({
   const addToCart = (product: CartItem) => {
     // Check if the product already exists in the cart
     const isDuplicate = cart.some((item) => {
-      // Check if the productId matches
-      if (item.productId !== product.productId) {
-        return false;
-      }
 
-      // Check if the product has variations
-      if ("variationId" in product) {
-        // Product has variations, check if the item also has variations and if variationId matches
-        return (
-          "variationId" in item && item.variationId === product.variationId
-        );
+      if(item.productId === product.productId && item.variationId === product.variationId){
+        return true;
       }
+      return false;
+      // // Check if the productId matches
+      // if (item.productId !== product.productId) {
+      //   return false;
+      // }
 
-      // Product does not have variations, item should not have a variationId
-      return !("variationId" in item);
+      // // Check if the product has variations
+      // if ("variationId" in product) {
+      //   // Product has variations, check if the item also has variations and if variationId matches
+      //   return (
+      //     "variationId" in item && item.variationId === product.variationId
+      //   );
+      // }
+
+      // // Product does not have variations, item should not have a variationId
+      // return !("variationId" in item);
     });
 
     if (isDuplicate) {

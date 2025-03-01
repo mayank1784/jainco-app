@@ -82,13 +82,23 @@ export interface CartItemWithVariations {
   amount: number;
 }
 
-export interface CartItemWithoutVariations {
-  qty: number;
-  productName: string;
-  productId: string;
-  price: number;
-  productMainImage: string;
-  amount: number;
+export type CartItem = CartItemWithVariations;
+
+export interface Order {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  totalAmount: number;
+  status: OrderStatus;
+
+  createdAt: any; // Firebase Timestamp
 }
 
-export type CartItem = CartItemWithVariations | CartItemWithoutVariations;
+
+export enum OrderStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}

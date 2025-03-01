@@ -8,12 +8,16 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CartContext } from "@/context/CartWishListContext";
-import { CartItem } from "@/lib/types";
+import { CartItem, Order, OrderStatus } from "@/lib/types";
 import { icons } from "@/constants";
 import { router } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
+import { db } from "@/services/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // StyledRenderItem component
 const StyledRenderItem: React.FC<{
@@ -21,9 +25,9 @@ const StyledRenderItem: React.FC<{
   updateCartItemQuantity: (
     productId: string,
     newQuantity: number,
-    variationId?: string
+    variationId: string
   ) => void;
-  removeFromCart: (productId: string, variationId?: string) => void;
+  removeFromCart: (productId: string, variationId: string) => void;
 }> = ({ item, updateCartItemQuantity, removeFromCart }) => {
   const imageUrl =
     "variationImage" in item && item.variationImage
@@ -33,11 +37,7 @@ const StyledRenderItem: React.FC<{
   const [quantity, setQuantity] = useState<number>(item.qty);
 
   useEffect(() => {
-    updateCartItemQuantity(
-      item.productId,
-      quantity,
-      "variationId" in item ? item.variationId : undefined
-    );
+    updateCartItemQuantity(item.productId, quantity, item.variationId);
   }, [quantity]);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -89,7 +89,7 @@ const StyledRenderItem: React.FC<{
                 }
               }}
               onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+              onBlur={() => setIsFocused(false)}
             />
 
             <TouchableOpacity
@@ -107,12 +107,7 @@ const StyledRenderItem: React.FC<{
 
         <TouchableOpacity
           className="bg-red-500 py-2 px-4 rounded-lg"
-          onPress={() =>
-            removeFromCart(
-              item.productId,
-              "variationId" in item ? item.variationId : undefined
-            )
-          }
+          onPress={() => removeFromCart(item.productId, item.variationId)}
         >
           <Text className="text-white text-sm">Remove</Text>
         </TouchableOpacity>
@@ -121,17 +116,34 @@ const StyledRenderItem: React.FC<{
   );
 };
 
-// CartSummary component
-const CartSummary: React.FC<{ total: number }> = ({ total }) => {
+// Modify CartSummary component to include Place Order button
+const CartSummary: React.FC<{
+  total: number;
+  onPlaceOrder: () => void;
+  isLoading: boolean;
+}> = ({ total, onPlaceOrder, isLoading }) => {
   return (
-    <View className="flex flex-row justify-between items-center p-4 bg-white rounded-lg shadow">
-      <Text className="text-xl font-semibold">Total:</Text>
-      <Text className="text-xl font-semibold">₹{total}</Text>
+    <View className="p-4 bg-white rounded-lg shadow">
+      <View className="flex flex-row justify-between items-center mb-4">
+        <Text className="text-xl font-semibold">Total:</Text>
+        <Text className="text-xl font-semibold">₹{total}</Text>
+      </View>
+      <TouchableOpacity
+        className={`bg-secondary py-3 rounded-lg ${
+          isLoading ? "opacity-50" : ""
+        }`}
+        onPress={onPlaceOrder}
+        disabled={isLoading}
+      >
+        <Text className="text-white text-center text-lg font-bold">
+          {isLoading ? "Placing Order..." : "Place Order"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-// Cart component
+// Modify Cart component
 const Cart: React.FC<any> = () => {
   const { cart, clearCart, updateCartItemQuantity, removeFromCart } =
     useContext(CartContext) || {
@@ -140,51 +152,93 @@ const Cart: React.FC<any> = () => {
       updateCartItemQuantity: () => {},
       removeFromCart: () => {},
     };
+  const { currentUser, profileData } = useAuth();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const total = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
+  const handlePlaceOrder = async () => {
+    if (!currentUser || !profileData) {
+      Alert.alert("Error", "Please sign in to place an order");
+      router.push("/sign-in");
+      return;
+    }
+
+    try {
+      setIsPlacingOrder(true);
+
+      const orderData: Omit<Order, "id"> = {
+        userId: currentUser.uid,
+        items: cart,
+        totalAmount: total,
+        status: OrderStatus.PENDING,
+       
+        createdAt: serverTimestamp(),
+      };
+
+      console.log(JSON.stringify(orderData,null,2))
+      const ordersRef = collection(db, "orders");
+      await addDoc(ordersRef, orderData);
+
+      // Clear the cart after successful order placement
+      await clearCart();
+
+      Alert.alert("Success", "Order placed successfully!", [
+        { text: "OK", onPress: () => router.push("/cart") },
+      ]);
+    } catch (error) {
+      console.error("Error placing order:", error);
+      Alert.alert("Error", "Failed to place order. Please try again.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 p-4 h-full w-full">
-       {/* <KeyboardAvoidingView
+      {/* <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
     > */}
-    {cart.length > 0 ? (
-      <>
-      <FlatList
-          data={cart}
-          renderItem={({ item }) => (
-            <StyledRenderItem
-              item={item}
-              updateCartItemQuantity={updateCartItemQuantity}
-              removeFromCart={removeFromCart}
-            />
-          )}
-          keyExtractor={(item) => ("sku" in item ? item.sku : item.productId)}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
-        <CartSummary total={total} />
+      {cart.length > 0 ? (
+        <>
+          <FlatList
+            data={cart}
+            renderItem={({ item }) => (
+              <StyledRenderItem
+                item={item}
+                updateCartItemQuantity={updateCartItemQuantity}
+                removeFromCart={removeFromCart}
+              />
+            )}
+            keyExtractor={(item: CartItem) => item.sku}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+          <CartSummary
+            total={total}
+            onPlaceOrder={handlePlaceOrder}
+            isLoading={isPlacingOrder}
+          />
         </>
-    ) : (
-      <>
-      <View className="font-iregular flex items-center justify-center w-full h-full">
-        <Text className="text-2xl">Cart is empty ! 🙁 </Text>
-        <Text className="text-xl">Add your first product now...</Text>
-        <TouchableOpacity
-                className="bg-secondary rounded-2xl py-4 px-4 mt-4"
-                onPress={() => {
-                  router.push("/")
-                }}
-              >
-                <Text className="text-center text-white text-xl font-bold">
-                 Find Products
-                </Text>
-              </TouchableOpacity>
-      </View>
-      </>
+      ) : (
+        <>
+          <View className="font-iregular flex items-center justify-center w-full h-full">
+            <Text className="text-2xl">Cart is empty ! 🙁 </Text>
+            <Text className="text-xl">Add your first product now...</Text>
+            <TouchableOpacity
+              className="bg-secondary rounded-2xl py-4 px-4 mt-4"
+              onPress={() => {
+                router.push("/");
+              }}
+            >
+              <Text className="text-center text-white text-xl font-bold">
+                Find Products
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
-    )}
-        
       {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -7,6 +7,8 @@ import FormField from "@/components/FormField";
 import CustomButton from "@/components/CustomButton";
 import { Link } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
+import { auth } from "@/services/firebase";
+import { sendPasswordResetEmail } from "firebase/auth";
 
 const SignIn: React.FC = () => {
   const { signIn } = useAuth();
@@ -14,16 +16,17 @@ const SignIn: React.FC = () => {
     email: "",
     password: "",
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+
   const submit = async () => {
     if (form.email === "" || form.password === "") {
       Alert.alert("Error", "Please fill in all the fields");
+      return;
     }
     setIsSubmitting(true);
     try {
       await signIn(form.email, form.password);
-
       Alert.alert("Success", "User signed in successfully");
       router.replace("/");
     } catch (error) {
@@ -35,6 +38,36 @@ const SignIn: React.FC = () => {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!form.email.trim()) {
+      Alert.alert("Error", "Please enter your email address first");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    if (!emailRegex.test(form.email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      await sendPasswordResetEmail(auth, form.email);
+      Alert.alert(
+        "Password Reset",
+        "If an account exists with this email, you will receive a password reset link"
+      );
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      Alert.alert(
+        "Error",
+        "Failed to send password reset email. Please try again later."
+      );
+    } finally {
+      setIsSendingReset(false);
     }
   };
 
@@ -72,13 +105,26 @@ const SignIn: React.FC = () => {
             }}
             otherStyles="mt-7"
           />
+          
+          {/* Forgot Password Link */}
+          <TouchableOpacity 
+            onPress={handleForgotPassword}
+            disabled={isSendingReset}
+            className="mt-2 mb-4"
+          >
+            <Text className="text-secondary text-right font-medium">
+              {isSendingReset ? "Sending..." : "Forgot Password?"}
+            </Text>
+          </TouchableOpacity>
+
           <CustomButton
             title="Sign In"
             handlePress={submit}
-            containerStyles="mt-7"
+            containerStyles="mt-3"
             isLoading={isSubmitting}
             textStyles=""
           />
+          
           <View className="justify-center pt-5 flex-row gap-2">
             <Text className="text-lg text-primary-100 font-pregular">
               Don't have a account ?

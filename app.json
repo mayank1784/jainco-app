@@ -2,7 +2,7 @@
   "expo": {
     "name": "jainco-app",
     "slug": "jainco-app",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "myapp",
@@ -26,7 +26,8 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.mayank1784.jaincoapp",
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",

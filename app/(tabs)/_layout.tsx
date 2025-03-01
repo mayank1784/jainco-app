@@ -83,7 +83,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="qr"
         options={{
           title: "QR",
@@ -96,7 +96,8 @@ export default function TabLayout() {
             />
           ),
         }}
-      />
+      /> */}
+      
       <Tabs.Screen
         name="cart"
         options={{
@@ -106,6 +107,20 @@ export default function TabLayout() {
               icon={icons.cart}
               color={color}
               name="Cart"
+              focused={focused}
+            />
+          ),
+        }}
+      />
+       <Tabs.Screen
+        name="order"
+        options={{
+          title: "Orders",
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              icon={icons.order}
+              color={color}
+              name="Orders"
               focused={focused}
             />
           ),
