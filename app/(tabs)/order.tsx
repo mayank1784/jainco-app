@@ -104,7 +104,8 @@ const OrderDetailsModal: React.FC<{
                   <View className="flex-1">
                     <Text className="font-medium">{item.productName}</Text>
                     <Text className="text-gray-600">
-                      Quantity: {`${item.qty} × ₹${item.price} = ₹${item.amount}`}
+                      Quantity:{" "}
+                      {`${item.qty} × ₹${item.price} = ₹${item.amount}`}
                     </Text>
                     <Text className="text-gray-600">SKU: {item.sku}</Text>
                   </View>
@@ -150,8 +151,19 @@ const OrderScreen: React.FC = () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setOrders([]);
+      setSelectedOrder(null);
+    }
+  }, [currentUser]);
+
   const fetchOrders = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       const thirtyDaysAgo = new Date();
@@ -174,6 +186,8 @@ const OrderScreen: React.FC = () => {
       setOrders(ordersData);
     } catch (error) {
       console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -192,10 +206,7 @@ const OrderScreen: React.FC = () => {
   }, [currentUser]);
 
   const renderOrderCard = ({ item: order }: { item: OrderWithId }) => (
-    <View
-      className="bg-white p-4 rounded-lg mb-4 shadow"
-     
-    >
+    <View className="bg-white p-4 rounded-lg mb-4 shadow">
       <View className="flex-row justify-between items-center mb-2">
         <Text className="text-sm text-gray-600">
           Order #{order.id.slice(-6)}
@@ -210,59 +221,66 @@ const OrderScreen: React.FC = () => {
         <Text className="text-lg font-semibold">₹{order.totalAmount}</Text>
       </View>
       <View className="flex-row justify-between items-center mb-2">
-      <Text className="text-sm text-gray-600">
-        {new Date(order.createdAt.seconds * 1000).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}
-      </Text>
-      <CustomButton title="View Details" handlePress={()=>setSelectedOrder(order)} containerStyles="min-h-[20px] px-3 py-2"/>
+        <Text className="text-sm text-gray-600">
+          {new Date(order.createdAt.seconds * 1000).toLocaleDateString(
+            "en-IN",
+            {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }
+          )}
+        </Text>
+        <CustomButton
+          title="View Details"
+          handlePress={() => setSelectedOrder(order)}
+          containerStyles="min-h-[20px] px-3 py-2"
+        />
       </View>
     </View>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-zinc-150 w-full">
-         <View className="border-b border-gray-200 pt-4 px-4">
+      <View className="border-b border-gray-200 pt-4 px-4">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
-            <Image 
-              source={images.logo} 
-              className="w-14 h-14 mr-4" 
+            <Image
+              source={images.logo}
+              className="w-14 h-14 mr-4"
               resizeMode="contain"
             />
             <Text className="text-xl font-bold">My Orders</Text>
           </View>
           <Text className="text-base font-iregular">
-            {`${new Date(thirtyDaysAgo).toLocaleDateString('en-IN', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
+            {`${new Date(thirtyDaysAgo).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
             })} - Now`}
           </Text>
         </View>
       </View>
       <View className="flex-1 p-4">
-      {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <Text>Loading orders...</Text>
-        </View>
-      ) : orders.length > 0 ? (
-        <FlatList
-          data={orders}
-          renderItem={renderOrderCard}
-          keyExtractor={(order) => order.id}
-          showsVerticalScrollIndicator={false}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-      ) : (
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-xl text-gray-600">No orders found</Text>
-        </View>
-      )}
-</View>
+        {loading ? (
+          <View className="flex-1 justify-center items-center">
+            <Text>Loading orders...</Text>
+          </View>
+        ) : orders.length > 0 ? (
+          <FlatList
+            data={orders}
+            renderItem={renderOrderCard}
+            keyExtractor={(order) => order.id}
+            showsVerticalScrollIndicator={false}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        ) : (
+          <View className="flex-1 justify-center items-center">
+            <Text className="text-xl text-gray-600">No orders found</Text>
+          </View>
+        )}
+      </View>
       <OrderDetailsModal
         visible={!!selectedOrder}
         order={selectedOrder}

@@ -7,7 +7,7 @@ import { useWindowDimensions } from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 // import { ImageZoom } from '@likashefqet/react-native-image-zoom';
 // import ImageZoom from "@/lib/imageZoom";
-import ZoomableImage from "@/components/ZoomableImage"
+import ZoomableImage from "@/components/ZoomableImage";
 import SearchInput from "@/components/SearchInput";
 import {
   Text,
@@ -39,7 +39,8 @@ import {
 } from "@/services/firebaseFunctions";
 import { findUnavailableCombinations } from "@/lib/utilityFunctions";
 
-const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
+const { width: viewportWidth, height: viewportHeight } =
+  Dimensions.get("window");
 // Define thresholds for different screen sizes (e.g., tablets)
 const isTablet = viewportWidth >= 480; // You can adjust this threshold based on your needs
 
@@ -501,7 +502,7 @@ const ProductPage: React.FC = () => {
   const closeModal = () => {
     setModalVisible(false);
   };
-  const imagesWithObjects = images.map(url => ({ url }));
+  const imagesWithObjects = images.map((url) => ({ url }));
   // Handle back button press to close modal
   useEffect(() => {
     const backAction = () => {
@@ -512,12 +513,14 @@ const ProductPage: React.FC = () => {
       return false; // Allow default back action if modal is not visible
     };
 
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
     // Clean up the event listener on component unmount
     return () => backHandler.remove();
   }, [isModalVisible]);
-  
 
   const handleDisabledState = (
     attributeName: string,
@@ -544,18 +547,18 @@ const ProductPage: React.FC = () => {
       ) : demoProduct ? (
         <ScrollView>
           <View>
-          <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-0 px-2">
-        <View className="flex flex-row justify-center items-center w-14 h-14">
-          <Image
-            source={constImages.logo}
-            resizeMode="contain"
-            className="w-full h-full"
-          />
-        </View>
-        <View className="flex-1 mx-2">
-          <SearchInput />
-        </View>
-      </View>
+            <View className="flex w-full h-auto mt-1 flex-row justify-between items-center overflow-hidden pb-0 px-2">
+              <View className="flex flex-row justify-center items-center w-14 h-14">
+                <Image
+                  source={constImages.logo}
+                  resizeMode="contain"
+                  className="w-full h-full"
+                />
+              </View>
+              <View className="flex-1 mx-2">
+                <SearchInput />
+              </View>
+            </View>
             <FlatList
               data={images}
               keyExtractor={(item, index) => index.toString()}
@@ -590,59 +593,71 @@ const ProductPage: React.FC = () => {
                 />
               ))}
             </View>
-           
+
             {/* ============================================================== */}
             {/* Modal for full screen image slider with zooming functionality */}
-            <Modal visible={isModalVisible} transparent={true} animationType="slide">
-        <View className="flex bg-primary bg-opacity-50 justify-center items-center h-full w-full">
-          {/* Close button */}
-          <TouchableOpacity onPress={closeModal} className="absolute top-8 right-8 z-10">
-            <Text className="text-white text-xl bg-black p-4 rounded-xl">Close</Text>
-          </TouchableOpacity>
+            <Modal
+              visible={isModalVisible}
+              transparent={true}
+              animationType="slide"
+            >
+              <View className="flex bg-primary bg-opacity-50 justify-center items-center h-full w-full">
+                {/* Close button */}
+                <TouchableOpacity
+                  onPress={closeModal}
+                  className="absolute top-8 right-8 z-10"
+                >
+                  <Text className="text-white text-xl bg-black p-4 rounded-xl">
+                    Close
+                  </Text>
+                </TouchableOpacity>
 
-           {/* Image Zoom component */}
-          
-           <View className="flex flex-col justify-center items-center">
-           <FlatList
-              data={images}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => (
-                <View className="" style={{width: viewportWidth, height: viewportWidth}}>
-                
-         
-              <Image source={{uri:item}} 
-              className="w-full h-full" resizeMode="cover"
-              />
-         </View>
+                {/* Image Zoom component */}
 
-               )}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onViewableItemsChanged={viewableItemChanges}
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: 90,
-              }}
-            />
-      </View>
-        
-          {/* Indicator for current image in modal */}
-          <View className="flex-row justify-center mt-2 mb-4">
-            {images.map((_, index) => (
-              <View
-                key={index}
-                className={`h-2 w-2 rounded-full mx-1 ${
-                  index === activeSlide ? "bg-secondary" : "bg-primary-200"
-                }`}
-              />
-            ))}
-          </View>
-        </View>
-      </Modal>
+                <View className="flex flex-col justify-center items-center">
+                  <FlatList
+                    data={images}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => (
+                      <View
+                        className=""
+                        style={{ width: viewportWidth, height: viewportWidth }}
+                      >
+                        <Image
+                          source={{ uri: item }}
+                          className="w-full h-full"
+                          resizeMode="cover"
+                        />
+                      </View>
+                    )}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onViewableItemsChanged={viewableItemChanges}
+                    viewabilityConfig={{
+                      itemVisiblePercentThreshold: 90,
+                    }}
+                  />
+                </View>
+
+                {/* Indicator for current image in modal */}
+                <View className="flex-row justify-center mt-2 mb-4">
+                  {images.map((_, index) => (
+                    <View
+                      key={index}
+                      className={`h-2 w-2 rounded-full mx-1 ${
+                        index === activeSlide
+                          ? "bg-secondary"
+                          : "bg-primary-200"
+                      }`}
+                    />
+                  ))}
+                </View>
+              </View>
+            </Modal>
             {/* ============================================================================================================= */}
           </View>
           <View className="p-4">
-          
             {/* Product Name */}
             <Text className="text-2xl font-lbold mt-0 capitalize">
               {productName}
@@ -679,7 +694,7 @@ const ProductPage: React.FC = () => {
                 Object.keys(demoProduct.variationTypes ?? {}).map(
                   (attributeName, idx, array) => (
                     <View key={attributeName} className="mt-4">
-                      <Text  className="text-primary-400 capitalize font-iregular">
+                      <Text className="text-primary-400 capitalize font-iregular">
                         {attributeName}
                       </Text>
                       <View className="flex-row flex-wrap mt-2">
@@ -891,8 +906,8 @@ const ProductPage: React.FC = () => {
 };
 const styles = StyleSheet.create({
   image: {
-    width:viewportWidth,
-    height: isTablet ? viewportWidth*0.85 : 330,
+    width: viewportWidth,
+    height: isTablet ? viewportWidth * 0.85 : 330,
     resizeMode: "stretch",
     borderRadius: 0,
   },
@@ -902,21 +917,21 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     right: 20,
     zIndex: 10,
   },
   closeText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
   },
   imageContainer: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 });
 export default ProductPage;
